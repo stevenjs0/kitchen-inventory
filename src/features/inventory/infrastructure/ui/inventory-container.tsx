@@ -5,6 +5,7 @@ import { InventoryItem } from '@/features/inventory/domain/entities';
 import { Category } from '@/features/categories/domain/entities';
 import { InventoryList } from './inventory-list';
 import { SearchBar } from './search-bar';
+import { ExportButton } from './export-button';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -104,7 +105,7 @@ export function InventoryContainer({
   return (
     <div className="space-y-6">
       <div className="sticky top-0 bg-background/95 backdrop-blur z-10 py-4 -mx-4 px-4 border-b md:border-none space-y-4">
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
           <div className="flex-1">
             <SearchBar onResultSelect={(item) => setSearchQuery(item.name)} />
           </div>
@@ -195,6 +196,8 @@ export function InventoryContainer({
               </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
+
+          <ExportButton items={filteredItems} fileName="inventario" />
         </div>
 
         {activeFiltersCount > 0 && (
