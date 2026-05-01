@@ -40,12 +40,29 @@ interface InventoryItemDB {
   locations?: LocationDB | null;
 }
 
-interface SearchInventoryResult {
-  id: string;
-}
-
 export class SupabaseInventoryRepository implements InventoryRepository {
   constructor(private db: SupabaseClient) {}
+
+  private normalizeSearchValue(value: string | null | undefined): string {
+    return value?.toLowerCase().trim() ?? '';
+  }
+
+  private matchesSearch(item: InventoryItem, searchValue: string): boolean {
+    if (!searchValue) return true;
+
+    const searchFields = [
+      item.name,
+      item.notes,
+      item.category?.name,
+      item.location?.full_path,
+      item.location?.name,
+      item.location?.section,
+    ];
+
+    return searchFields.some((field) =>
+      this.normalizeSearchValue(field).includes(searchValue),
+    );
+  }
 
   private formatLocationPath(location: LocationDB): string {
     const computedPath = [
@@ -128,30 +145,24 @@ export class SupabaseInventoryRepository implements InventoryRepository {
       query = query.eq('stock_quantity', 0);
     }
 
-    if (filters?.search) {
-      const { data: searchResults } = await this.db.rpc('search_inventory', {
-        search_query: filters.search,
-      });
-      const ids =
-        (searchResults as SearchInventoryResult[] | null)?.map((r) => r.id) ??
-        [];
-      if (ids.length === 0) return [];
-      query = query.in('id', ids);
-    }
-
     const { data } = await query.order('created_at', { ascending: false });
     const items = data
       ? (data as InventoryItemDB[]).map((item) => this.toEntity(item))
       : [];
 
+    const searchValue = this.normalizeSearchValue(filters?.search);
+    const filteredItems = searchValue
+      ? items.filter((item) => this.matchesSearch(item, searchValue))
+      : items;
+
     if (filters?.stock_status === 'low') {
-      return items.filter(
+      return filteredItems.filter(
         (item) =>
           item.stock_quantity > 0 && item.stock_quantity < item.min_stock,
       );
     }
 
-    return items;
+    return filteredItems;
   }
 
   async create(data: CreateInventoryItemDTO): Promise<InventoryItem> {
@@ -223,28 +234,14 @@ export class SupabaseInventoryRepository implements InventoryRepository {
   }
 
   async search(query: string): Promise<InventoryItem[]> {
-    if (!query || query.trim().length < 2) {
+    const normalizedQuery = this.normalizeSearchValue(query);
+
+    if (normalizedQuery.length < 2) {
       return [];
     }
 
-    const { data } = await this.db.rpc('search_inventory', {
-      search_query: query,
-    });
-
-    if (!data) return [];
-
-    const ids = (data as SearchInventoryResult[]).map((r) => r.id);
-    if (ids.length === 0) return [];
-
-    const { data: items } = await this.db
-      .from('inventory_items')
-      .select('*, categories(*), locations(*)')
-      .in('id', ids)
-      .eq('is_active', true);
-
-    return items
-      ? (items as InventoryItemDB[]).map((item) => this.toEntity(item))
-      : [];
+    const items = await this.findAll();
+    return items.filter((item) => this.matchesSearch(item, normalizedQuery));
   }
 
   async findByCategory(categoryId: string): Promise<InventoryItem[]> {

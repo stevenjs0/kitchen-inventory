@@ -7,11 +7,19 @@ import { InventoryList } from './inventory-list';
 import { SearchBar } from './search-bar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Filter, X } from 'lucide-react';
+import {
+  Filter,
+  X,
+  Tag,
+  CheckCircle2,
+  AlertCircle,
+  XCircle,
+  RotateCcw,
+} from 'lucide-react';
+import { getTextColorForBackground } from '@/lib/utils';
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -131,21 +139,30 @@ export function InventoryContainer({
                   onCheckedChange={() => toggleStockStatus('normal')}
                   className="rounded-lg"
                 >
-                  ✅ Normal
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                    <span>Normal</span>
+                  </div>
                 </DropdownMenuCheckboxItem>
                 <DropdownMenuCheckboxItem
                   checked={stockStatus.includes('low')}
                   onCheckedChange={() => toggleStockStatus('low')}
                   className="rounded-lg"
                 >
-                  ⚠️ Bajo Stock
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="h-4 w-4 text-amber-500" />
+                    <span>Bajo Stock</span>
+                  </div>
                 </DropdownMenuCheckboxItem>
                 <DropdownMenuCheckboxItem
                   checked={stockStatus.includes('out')}
                   onCheckedChange={() => toggleStockStatus('out')}
                   className="rounded-lg"
                 >
-                  ❌ Agotado
+                  <div className="flex items-center gap-2">
+                    <XCircle className="h-4 w-4 text-red-500" />
+                    <span>Agotado</span>
+                  </div>
                 </DropdownMenuCheckboxItem>
               </DropdownMenuGroup>
 
@@ -163,62 +180,104 @@ export function InventoryContainer({
                       onCheckedChange={() => toggleCategory(cat.id)}
                       className="rounded-lg"
                     >
-                      {cat.name}
+                      <div className="flex items-center gap-2">
+                        <Tag
+                          className="h-3.5 w-3.5"
+                          style={{ color: cat.color || '#6B7280' }}
+                        />
+                        <span style={{ color: cat.color || '#6B7280' }}>
+                          {cat.name}
+                        </span>
+                      </div>
                     </DropdownMenuCheckboxItem>
                   ))}
                 </div>
               </DropdownMenuGroup>
-
-              {activeFiltersCount > 0 && (
-                <>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={clearFilters}
-                    className="justify-center text-destructive focus:text-destructive rounded-lg font-medium"
-                  >
-                    Limpiar Filtros
-                  </DropdownMenuItem>
-                </>
-              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
 
         {activeFiltersCount > 0 && (
-          <div className="flex flex-wrap gap-2 animate-in fade-in slide-in-from-top-1 duration-200">
-            {stockStatus.map((s) => (
-              <Badge
-                key={s}
-                variant="secondary"
-                className="gap-1 rounded-full pl-2 pr-1 py-0.5 bg-primary/10 text-primary border-none"
-              >
-                {s === 'normal'
-                  ? 'Normal'
-                  : s === 'low'
-                    ? 'Bajo Stock'
-                    : 'Agotado'}
-                <X
-                  className="h-3 w-3 cursor-pointer hover:text-foreground"
-                  onClick={() => toggleStockStatus(s)}
-                />
-              </Badge>
-            ))}
-            {selectedCategories.map((id) => {
-              const cat = categories.find((c) => c.id === id);
-              return (
-                <Badge
-                  key={id}
-                  variant="secondary"
-                  className="gap-1 rounded-full pl-2 pr-1 py-0.5 bg-primary/10 text-primary border-none"
-                >
-                  {cat?.name}
-                  <X
-                    className="h-3 w-3 cursor-pointer hover:text-foreground"
-                    onClick={() => toggleCategory(id)}
-                  />
-                </Badge>
-              );
-            })}
+          <div className="flex justify-between items-start gap-4 animate-in fade-in slide-in-from-top-1 duration-200">
+            <div className="flex flex-wrap gap-2 items-center flex-1">
+              {stockStatus.map((s) => {
+                const getIcon = () => {
+                  switch (s) {
+                    case 'normal':
+                      return <CheckCircle2 className="h-3 w-3" />;
+                    case 'low':
+                      return <AlertCircle className="h-3 w-3" />;
+                    case 'out':
+                      return <XCircle className="h-3 w-3" />;
+                    default:
+                      return null;
+                  }
+                };
+
+                return (
+                  <Badge
+                    key={s}
+                    variant="secondary"
+                    className="gap-1 rounded-full pl-2.5 pr-1.5 py-1 bg-primary text-primary-foreground border-none font-medium text-xs inline-flex items-center"
+                  >
+                    {getIcon()}
+                    {s === 'normal'
+                      ? 'Normal'
+                      : s === 'low'
+                        ? 'Bajo Stock'
+                        : 'Agotado'}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleStockStatus(s);
+                      }}
+                      className="ml-0.5 h-5 w-5 p-0 hover:bg-black/20 dark:hover:bg-white/20"
+                      aria-label={`Remover filtro ${s}`}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </Badge>
+                );
+              })}
+              {selectedCategories.map((id) => {
+                const cat = categories.find((c) => c.id === id);
+                const textColor = getTextColorForBackground(cat?.color);
+                return (
+                  <Badge
+                    key={id}
+                    className={`gap-1.5 rounded-full pl-2.5 pr-1.5 py-1 border-none font-medium text-xs inline-flex items-center ${textColor}`}
+                    style={{ backgroundColor: cat?.color || '#6B7280' }}
+                  >
+                    <Tag className="h-3 w-3" />
+                    {cat?.name}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleCategory(id);
+                      }}
+                      className="ml-0.5 h-5 w-5 p-0 hover:bg-black/20 dark:hover:bg-white/20"
+                      aria-label={`Remover filtro ${cat?.name}`}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </Badge>
+                );
+              })}
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearFilters}
+              className="shrink-0 h-6 w-6 p-0 text-muted-foreground hover:text-destructive transition-colors"
+              aria-label="Limpiar todos los filtros"
+              title="Limpiar filtros"
+            >
+              <RotateCcw className="h-4 w-4" />
+            </Button>
           </div>
         )}
       </div>

@@ -114,10 +114,7 @@ export function ItemForm({
               }
             >
               <SelectTrigger className="h-11 bg-muted/20 border-muted-foreground/20">
-                <SelectValue placeholder="Seleccionar categoría">
-                  {formData.category_id &&
-                    getCategoryName(formData.category_id)}
-                </SelectValue>
+                <SelectValue placeholder="Seleccionar categoría" />
               </SelectTrigger>
               <SelectContent>
                 {categories.map((cat) => (
@@ -143,10 +140,7 @@ export function ItemForm({
               }
             >
               <SelectTrigger className="h-11 bg-muted/20 border-muted-foreground/20">
-                <SelectValue placeholder="Seleccionar ubicación">
-                  {formData.location_id &&
-                    getLocationPath(formData.location_id)}
-                </SelectValue>
+                <SelectValue placeholder="Seleccionar ubicación" />
               </SelectTrigger>
               <SelectContent>
                 {locations.map((loc) => (

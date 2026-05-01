@@ -4,10 +4,15 @@ import { InventoryItem } from '@/features/inventory/domain/entities';
 import { StockQuickUpdate } from './stock-quick-update';
 import { formatStockStatus } from '@/shared/utils/formatters';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import {
+    Card,
+    CardContent,
+    CardFooter,
+    CardHeader,
+} from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-import { MapPin, ChevronRight, Edit3, Eye } from 'lucide-react';
+import { MapPin, ChevronRight, Edit3, Eye, Tag } from 'lucide-react';
 
 interface InventoryListProps {
   items: InventoryItem[];
@@ -29,26 +34,60 @@ export function InventoryList({ items }: InventoryListProps) {
           item.stock_quantity,
           item.min_stock,
         );
-        
+
         // Map status color to badge variant
-        const badgeVariant: "destructive" | "warning" | "success" | "secondary" = 
-          stockInfo.color.includes('red') ? 'destructive' : 
-          stockInfo.color.includes('amber') ? 'warning' : 
-          stockInfo.color.includes('green') ? 'success' : 'secondary';
+        const badgeVariant:
+          | 'destructive'
+          | 'warning'
+          | 'success'
+          | 'secondary' = stockInfo.color.includes('red')
+          ? 'destructive'
+          : stockInfo.color.includes('amber')
+            ? 'warning'
+            : stockInfo.color.includes('green')
+              ? 'success'
+              : 'secondary';
 
         return (
-          <Card key={item.id} className="overflow-hidden border-none shadow-sm hover:shadow-md transition-all duration-200 bg-card/50 backdrop-blur-sm border-l-4" 
-            style={{ borderLeftColor: stockInfo.color.includes('red') ? 'rgb(239, 68, 68)' : stockInfo.color.includes('amber') ? 'rgb(245, 158, 11)' : 'transparent' }}>
+          <Card
+            key={item.id}
+            className="overflow-hidden border-none shadow-sm hover:shadow-md transition-all duration-200 bg-card/50 backdrop-blur-sm border-l-4"
+            style={{
+              borderLeftColor: stockInfo.color.includes('red')
+                ? 'rgb(239, 68, 68)'
+                : stockInfo.color.includes('amber')
+                  ? 'rgb(245, 158, 11)'
+                  : 'transparent',
+            }}
+          >
             <CardHeader className="p-4 pb-2">
               <div className="flex justify-between items-start">
                 <div className="space-y-1 flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-base leading-tight truncate">{item.name}</h3>
-                    <Badge variant={badgeVariant} className="text-[10px] px-1.5 py-0 h-4 uppercase tracking-tighter">
+                    <h3 className="font-semibold text-base leading-tight truncate">
+                      {item.name}
+                    </h3>
+                    <Badge
+                      variant={badgeVariant}
+                      className="text-[10px] px-1.5 py-0 h-4 uppercase tracking-tighter"
+                    >
                       {stockInfo.label}
                     </Badge>
                   </div>
-                  <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">{item.category?.name}</p>
+                  {item.category && (
+                    <div className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider">
+                      <Tag
+                        className="h-3 w-3 shrink-0"
+                        style={{ color: item.category.color || '#6B7280' }}
+                      />
+                      <span
+                        className="truncate"
+                        style={{ color: item.category.color || '#6B7280' }}
+                      >
+                        {item.category.name}
+                      </span>
+                    </div>
+                  )}
                 </div>
                 <StockQuickUpdate
                   itemId={item.id}
@@ -66,7 +105,11 @@ export function InventoryList({ items }: InventoryListProps) {
 
             <CardFooter className="p-4 pt-0 flex justify-end gap-2">
               <Link href={`/inventory/${item.id}?edit=true`}>
-                <Button variant="ghost" size="sm" className="h-8 px-2 text-muted-foreground hover:text-foreground">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 px-2 text-muted-foreground hover:text-foreground"
+                >
                   <Edit3 className="h-3.5 w-3.5 mr-1" />
                   <span className="text-xs">Editar</span>
                 </Button>

@@ -8,14 +8,19 @@ export default async function LocationsPage() {
   const locations = await getLocationsTree();
 
   return (
-    <div className="container mx-auto p-4 space-y-8 pb-24 md:pb-8 max-w-2xl">
+    <div className="container mx-auto p-4 space-y-8 pb-24 md:pb-8 max-w-6xl">
       <header className="flex justify-between items-end pb-2 border-b">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Ubicaciones</h1>
-          <p className="text-muted-foreground text-sm">Organiza tus espacios de almacenamiento</p>
+          <p className="text-muted-foreground text-sm">
+            Organiza tus espacios de almacenamiento
+          </p>
         </div>
         <Link href="/locations/new">
-          <Button size="sm" className="rounded-full shadow-sm hover:shadow-md transition-shadow">
+          <Button
+            size="sm"
+            className="rounded-full shadow-sm hover:shadow-md transition-shadow"
+          >
             <Plus className="mr-2 h-4 w-4" /> Nueva Ubicación
           </Button>
         </Link>
