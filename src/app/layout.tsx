@@ -28,7 +28,10 @@ export default async function RootLayout({
 
   return (
     <html lang="es" className={htmlClassName} suppressHydrationWarning>
-      <body className="min-h-full flex flex-col bg-background font-sans">
+      <body
+        className="min-h-full flex flex-col bg-background font-sans"
+        suppressHydrationWarning
+      >
         <ThemeProvider>
           <Navbar />
           <main className="flex-1 pb-20 md:pb-8">{children}</main>

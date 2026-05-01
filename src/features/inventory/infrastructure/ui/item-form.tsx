@@ -61,10 +61,10 @@ export function ItemForm({
 
   // Helper para obtener la ruta de la ubicación por ID
   const getLocationPath = (locationId: string) => {
-    return locations.find((loc) => loc.id === locationId)?.full_path;
+    return locations.find((loc) => loc.id === locationId)?.full_path ?? null;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
     setLoading(true);
 
@@ -114,7 +114,9 @@ export function ItemForm({
               }
             >
               <SelectTrigger className="h-11 bg-muted/20 border-muted-foreground/20">
-                <SelectValue placeholder="Seleccionar categoría" />
+                <SelectValue placeholder="Seleccionar categoría">
+                  {getCategoryName(formData.category_id)}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {categories.map((cat) => (
@@ -140,7 +142,9 @@ export function ItemForm({
               }
             >
               <SelectTrigger className="h-11 bg-muted/20 border-muted-foreground/20">
-                <SelectValue placeholder="Seleccionar ubicación" />
+                <SelectValue placeholder="Seleccionar ubicación">
+                  {getLocationPath(formData.location_id)}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {locations.map((loc) => (
@@ -176,7 +180,7 @@ export function ItemForm({
           <div className="space-y-2">
             <Label
               htmlFor="minStock"
-              className="text-xs font-bold uppercase tracking-wider flex items-center gap-2 text-muted-foreground text-amber-600 dark:text-amber-500"
+              className="text-xs font-bold uppercase tracking-wider flex items-center gap-2 text-amber-600 dark:text-amber-500"
             >
               <AlertTriangle className="h-3 w-3" /> Stock Mínimo
             </Label>
