@@ -50,7 +50,24 @@ CREATE TABLE IF NOT EXISTS inventory_items (
   ) STORED
 );
 
--- 3. DATOS INICIALES (Categorías y Ubicaciones)
+-- 3. RLS (Row Level Security) - Habilitar y crear políticas
+ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
+ALTER TABLE locations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE inventory_items ENABLE ROW LEVEL SECURITY;
+
+-- Políticas para categorías (permite todo para app personal)
+CREATE POLICY "Permitir todo en categories" ON categories
+  FOR ALL USING (true) WITH CHECK (true);
+
+-- Políticas para ubicaciones
+CREATE POLICY "Permitir todo en locations" ON locations
+  FOR ALL USING (true) WITH CHECK (true);
+
+-- Políticas para inventory_items
+CREATE POLICY "Permitir todo en inventory_items" ON inventory_items
+  FOR ALL USING (true) WITH CHECK (true);
+
+-- 4. DATOS INICIALES (Categorías y Ubicaciones)
 -- Dejamos que Postgres genere los IDs automáticamente
 INSERT INTO categories (name, description, color) VALUES
   ('Aceite', 'Aceites, margarinas y grasas', '#FCD34D'),
