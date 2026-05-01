@@ -60,41 +60,39 @@ export function InventoryList({ items }: InventoryListProps) {
                   : 'transparent',
             }}
           >
-            <CardHeader className="p-4 pb-2">
-              <div className="flex justify-between items-start">
-                <div className="space-y-1 flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-base leading-tight truncate">
-                      {item.name}
-                    </h3>
-                    <Badge
-                      variant={badgeVariant}
-                      className="text-[10px] px-1.5 py-0 h-4 uppercase tracking-tighter"
-                    >
-                      {stockInfo.label}
-                    </Badge>
-                  </div>
-                  {item.category && (
-                    <div className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider">
-                      <Tag
-                        className="h-3 w-3 shrink-0"
-                        style={{ color: item.category.color || '#6B7280' }}
-                      />
-                      <span
-                        className="truncate"
-                        style={{ color: item.category.color || '#6B7280' }}
-                      >
-                        {item.category.name}
-                      </span>
-                    </div>
-                  )}
-                </div>
-                <StockQuickUpdate
-                  itemId={item.id}
-                  currentStock={item.stock_quantity}
-                />
+            <CardHeader className="p-4 pb-2 flex flex-row items-start gap-3">
+            <div className="space-y-1 flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <h3 className="font-semibold text-base leading-tight truncate">
+                  {item.name}
+                </h3>
+                <Badge
+                  variant={badgeVariant}
+                  className="text-[10px] px-1.5 py-0 h-4 uppercase tracking-tighter shrink-0"
+                >
+                  {stockInfo.label}
+                </Badge>
               </div>
-            </CardHeader>
+              {item.category && (
+                <div className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider">
+                  <Tag
+                    className="h-3 w-3 shrink-0"
+                    style={{ color: item.category.color || '#6B7280' }}
+                  />
+                  <span
+                    className="truncate"
+                    style={{ color: item.category.color || '#6B7280' }}
+                  >
+                    {item.category.name}
+                  </span>
+                </div>
+              )}
+            </div>
+            <StockQuickUpdate
+              itemId={item.id}
+              currentStock={item.stock_quantity}
+            />
+          </CardHeader>
 
             <CardContent className="p-4 pt-0 pb-3">
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
