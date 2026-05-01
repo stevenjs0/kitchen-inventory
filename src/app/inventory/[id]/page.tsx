@@ -3,6 +3,7 @@ import { getAllCategories } from "@/lib/actions/categories.actions";
 import { getLocationsTree } from "@/lib/actions/locations.actions";
 import { CreateInventoryItemDTO } from "@/features/inventory/domain/entities";
 import { ItemForm } from "@/features/inventory/infrastructure/ui/item-form";
+import { DeleteItemButton } from "@/features/inventory/infrastructure/ui/delete-item-button";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatStockStatus } from "@/shared/utils/formatters";
@@ -92,11 +93,14 @@ export default async function ItemPage({
             </div>
           </div>
         </div>
-        <Link href={`/inventory/${id}?edit=true`}>
-          <Button variant="outline" size="sm" className="rounded-full gap-2">
-            <Edit3 className="h-4 w-4" /> Editar
-          </Button>
-        </Link>
+        <div className="flex gap-2">
+          <DeleteItemButton itemId={item.id} itemName={item.name} />
+          <Link href={`/inventory/${id}?edit=true`}>
+            <Button variant="outline" size="sm" className="rounded-full gap-2">
+              <Edit3 className="h-4 w-4" /> Editar
+            </Button>
+          </Link>
+        </div>
       </header>
 
       <main className="grid gap-6">
