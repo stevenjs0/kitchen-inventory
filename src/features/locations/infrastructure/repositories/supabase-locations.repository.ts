@@ -28,7 +28,7 @@ export class SupabaseLocationRepository implements LocationRepository {
       side: data.side ?? undefined,
       position: data.position ?? undefined,
       level: data.level,
-      full_path: data.full_path ?? undefined,
+      full_path: data.full_path ?? "",
       created_at: new Date(data.created_at),
     };
   }
