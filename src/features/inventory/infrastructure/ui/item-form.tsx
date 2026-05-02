@@ -5,6 +5,7 @@ import {
   InventoryItem,
   CreateInventoryItemDTO,
 } from '@/features/inventory/domain/entities';
+import { UNIT_OPTIONS } from '@/features/inventory/domain/constants';
 import { Category } from '@/features/categories/domain/entities';
 import { Location } from '@/features/locations/domain/entities';
 import { Button } from '@/components/ui/button';
@@ -98,9 +99,18 @@ export function ItemForm({
     return '';
   };
 
+  const getInitialPosition = () => {
+    if (item?.location_id) {
+      const location = locations.find((loc) => loc.id === item.location_id);
+      return location?.position || '';
+    }
+    return '';
+  };
+
   const [selectedSection, setSelectedSection] = useState(getInitialSection);
   const [selectedLevel, setSelectedLevel] = useState(getInitialLevel);
   const [selectedSide, setSelectedSide] = useState(getInitialSide);
+  const [selectedPosition, setSelectedPosition] = useState(getInitialPosition);
 
   // Get available levels for selected section
   const availableLevels = useMemo(() => {
@@ -128,6 +138,20 @@ export function ItemForm({
     return Array.from(sides).sort();
   }, [locations, selectedSection, selectedLevel]);
 
+  // Get available positions for selected section, level, and side
+  const availablePositions = useMemo(() => {
+    if (!selectedSection || !selectedLevel) return [];
+    return locations
+      .filter(
+        (loc) =>
+          loc.section === selectedSection &&
+          loc.level === selectedLevel &&
+          (selectedSide ? loc.side === selectedSide : !loc.side),
+      )
+      .map((loc) => loc.position)
+      .filter((pos): pos is string => Boolean(pos));
+  }, [locations, selectedSection, selectedLevel, selectedSide]);
+
   // Find the location_id based on selections
   const selectedLocationId = useMemo(() => {
     if (!selectedSection || !selectedLevel) return '';
@@ -135,10 +159,11 @@ export function ItemForm({
       (loc) =>
         loc.section === selectedSection &&
         loc.level === selectedLevel &&
-        (selectedSide ? loc.side === selectedSide : !loc.side),
+        (selectedSide ? loc.side === selectedSide : !loc.side) &&
+        (selectedPosition ? loc.position === selectedPosition : !loc.position),
     );
     return found?.id || '';
-  }, [locations, selectedSection, selectedLevel, selectedSide]);
+  }, [locations, selectedSection, selectedLevel, selectedSide, selectedPosition]);
 
   const [formData, setFormData] = useState({
     name: item?.name || '',
@@ -166,6 +191,12 @@ export function ItemForm({
   // Handle side change
   const handleSideChange = (side: string) => {
     setSelectedSide(side);
+    setSelectedPosition('');
+  };
+
+  // Handle position change
+  const handlePositionChange = (position: string) => {
+    setSelectedPosition(position);
   };
 
   // Validate form before submit
@@ -409,6 +440,36 @@ export function ItemForm({
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* Position Select */}
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-2">
+                  <LayoutGrid className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span className="text-xs font-medium text-muted-foreground flex items-center gap-0.5">
+                    Posición
+                  </span>
+                </div>
+                <Select
+                  value={selectedPosition}
+                  onValueChange={(value) => {
+                    if (value) handlePositionChange(value);
+                  }}
+                  disabled={!selectedLevel}
+                >
+                  <SelectTrigger className="h-11 bg-background border-border">
+                    <SelectValue placeholder="Seleccionar posición">
+                      {selectedPosition || (!selectedLevel ? 'Primero nivel' : 'Seleccionar posición (opcional)')}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availablePositions.map((pos) => (
+                      <SelectItem key={pos} value={pos}>
+                        {pos}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
         )}
@@ -503,12 +564,11 @@ export function ItemForm({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="unidad">Unidades</SelectItem>
-                <SelectItem value="kg">Kilogramos (kg)</SelectItem>
-                <SelectItem value="g">Gramos (g)</SelectItem>
-                <SelectItem value="L">Litros (L)</SelectItem>
-                <SelectItem value="ml">Mililitros (ml)</SelectItem>
-                <SelectItem value="paquete">Paquetes</SelectItem>
+                {UNIT_OPTIONS.map((u) => (
+                  <SelectItem key={u.value} value={u.value}>
+                    {u.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
