@@ -1,29 +1,15 @@
-<div align="center">
+# Inventario Cocina
 
-```text
-  ┌─────────────────────────────────────────────┐
-  │                                             │
-  │         INVENTARIO COCINA                   │
-  │         Kitchen Inventory System            │
-  │                                             │
-  │     ─────────────────────────────           │
-  │     Track · Organize · Never Run Out        │
-  │                                             │
-  └─────────────────────────────────────────────┘
-```
-
-### Manage your kitchen supplies across every cabinet, shelf, and drawer.
-
-Built with Next.js 16 · Supabase · Tailwind CSS 4 · TypeScript
+> Kitchen inventory management system. Track items across locations with stock levels, categories, and full-text search.
 
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js)](https://nextjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?style=flat-square&logo=supabase)](https://supabase.com)
 [![License](https://img.shields.io/badge/License-Private-red?style=flat-square)]()
 
----
+Manage your kitchen supplies across every cabinet, shelf, and drawer. Built with Next.js 16, Supabase, Tailwind CSS 4, and TypeScript.
 
-## Features
+---
 
 | Feature | Description |
 |---|---|
