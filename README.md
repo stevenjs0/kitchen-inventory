@@ -11,6 +11,8 @@ Manage your kitchen supplies across every cabinet, shelf, and drawer. Built with
 
 ---
 
+## Features
+
 | Feature | Description |
 |---|---|
 | **Inventory Tracking** | Track stock levels, minimum thresholds, and units for every item |
@@ -27,42 +29,87 @@ Manage your kitchen supplies across every cabinet, shelf, and drawer. Built with
 
 ## Tech Stack
 
-```
-Framework       Next.js 16.2.4 (App Router)
-Language        TypeScript 5
-Styling         Tailwind CSS 4 + shadcn/ui (oklch colors)
-Backend         Supabase (PostgreSQL + SSR)
-Icons           Lucide React
-Notifications   Sonner
-State           Server Actions + React State
-Theme           next-themes (cookie-based)
-```
+| Component | Technology |
+|---|---|
+| **Framework** | Next.js 16.2.4 (App Router) |
+| **Language** | TypeScript 5 |
+| **Styling** | Tailwind CSS 4 + shadcn/ui (oklch colors) |
+| **Backend** | Supabase (PostgreSQL + SSR) |
+| **Icons** | Lucide React |
+| **Notifications** | Sonner |
+| **State Management** | Server Actions + React State |
+| **Theme** | next-themes (cookie-based) |
 
 ---
 
 ## Architecture
 
-The project follows **Clean Architecture** with a feature-based folder structure:
+```mermaid
+graph TB
+    subgraph "Client Layer"
+        UI["UI Components<br/>(React)"]
+        TH["next-themes<br/>(Theme Provider)"]
+    end
+    
+    subgraph "Next.js App Router"
+        SC["Server Components"]
+        CC["Client Components<br/>'use client'"]
+        SA["Server Actions"]
+    end
+    
+    subgraph "Application Layer"
+        AS["Application Services"]
+        VP["Validation Layer"]
+    end
+    
+    subgraph "Infrastructure Layer"
+        RP["Repositories"]
+        SB["Supabase Client"]
+    end
+    
+    subgraph "Data Layer"
+        PG["PostgreSQL<br/>(Supabase)"]
+    end
+    
+    UI --> SC
+    UI --> CC
+    UI --> SA
+    TH --> CC
+    SA --> AS
+    AS --> VP
+    VP --> RP
+    RP --> SB
+    SB <--> PG
+    
+    CC <-->|Reactive State| TH
+    
+    style SC fill:#2d3748,color:#fff
+    style CC fill:#4a5568,color:#fff
+    style SA fill:#2d3748,color:#fff
+    style AS fill:#553c9a,color:#fff
+    style VP fill:#6b46c1,color:#fff
+    style RP fill:#2b6cb0,color:#fff
+    style SB fill:#319795,color:#fff
+    style PG fill:#276749,color:#fff
+```
+
+### Folder Structure
 
 ```
-src/features/
-├── inventory/       application/  services
-│                   domain/        entities, ports, constants
-│                   infrastructure/  repositories, ui
-├── categories/
-│   └── ...
-└── locations/
-    └── ...
-
-src/lib/
-├── actions/         Server Actions (public mutation API)
-├── supabase/        Browser + Server Supabase clients
-└── utils.ts         cn(), getTextColorForBackground()
+src/
+├── app/                    # Next.js pages (App Router)
+├── components/ui/          # shadcn/ui base components
+├── features/               # Feature modules (Clean Architecture)
+│   ├── inventory/
+│   ├── categories/
+│   └── locations/
+└── lib/                    # Shared utilities
+    ├── actions/            # Server Actions
+    ├── supabase/           # DB clients
+    └── utils.ts
 ```
 
-**Data flows:** UI → Server Action → Application Service → Supabase Repository → PostgreSQL
-
-See the [[Project Architecture - inventario-cocina|Obsidian documentation]] for diagrams and deep-dive docs.
+For detailed architecture documentation, database schema, and implementation notes, refer to the project documentation files.
 
 ---
 
@@ -75,7 +122,7 @@ Three core tables: `categories`, `locations`, `inventory_items`
 - Row Level Security enabled (fully permissive for personal use)
 - Soft deletes via `is_active` flag
 
-See [[Database Schema - inventario-cocina|the schema docs]] for the full ERD.
+For the full ERD and database schema details, refer to the project documentation.
 
 ---
 
@@ -136,5 +183,3 @@ npm run lint
 ## License
 
 Private — personal project.
-
-</div>
