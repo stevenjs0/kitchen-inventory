@@ -5,7 +5,10 @@ import {
   UpdateInventoryItemDTO,
   InventoryFilters,
 } from '@/features/inventory/domain/entities';
-import { InventoryRepository } from '@/features/inventory/domain/ports';
+import {
+  InventoryRepository,
+  MutationContext,
+} from '@/features/inventory/domain/ports';
 interface CategoryDB {
   id: string;
   name: string;
@@ -36,6 +39,8 @@ interface InventoryItemDB {
   created_at: string;
   updated_at: string;
   last_stock_update?: string | null;
+  created_by?: string | null;
+  updated_by?: string | null;
   categories?: CategoryDB | null;
   locations?: LocationDB | null;
 }
@@ -93,6 +98,8 @@ export class SupabaseInventoryRepository implements InventoryRepository {
       last_stock_update: data.last_stock_update
         ? new Date(data.last_stock_update)
         : undefined,
+      created_by: data.created_by ?? undefined,
+      updated_by: data.updated_by ?? undefined,
       category: data.categories
         ? {
             id: data.categories.id,
@@ -165,12 +172,14 @@ export class SupabaseInventoryRepository implements InventoryRepository {
     return filteredItems;
   }
 
-  async create(data: CreateInventoryItemDTO): Promise<InventoryItem> {
+  async create(data: CreateInventoryItemDTO, ctx?: MutationContext): Promise<InventoryItem> {
     const { data: result, error } = await this.db
       .from('inventory_items')
       .insert({
         ...data,
         unit: data.unit || 'unidad',
+        created_by: ctx?.createdBy ?? ctx?.updatedBy ?? null,
+        updated_by: ctx?.updatedBy ?? ctx?.createdBy ?? null,
       })
       .select('*, categories(*), locations(*)')
       .single();
@@ -182,12 +191,14 @@ export class SupabaseInventoryRepository implements InventoryRepository {
   async update(
     id: string,
     data: UpdateInventoryItemDTO,
+    ctx?: MutationContext,
   ): Promise<InventoryItem> {
     const { data: result, error } = await this.db
       .from('inventory_items')
       .update({
         ...data,
         updated_at: new Date().toISOString(),
+        updated_by: ctx?.updatedBy ?? null,
       })
       .eq('id', id)
       .select('*, categories(*), locations(*)')
@@ -204,13 +215,14 @@ export class SupabaseInventoryRepository implements InventoryRepository {
       .eq('id', id);
   }
 
-  async updateStock(id: string, quantity: number): Promise<InventoryItem> {
+  async updateStock(id: string, quantity: number, ctx?: MutationContext): Promise<InventoryItem> {
     const { data: result, error } = await this.db
       .from('inventory_items')
       .update({
         stock_quantity: quantity,
         last_stock_update: new Date().toISOString(),
         updated_at: new Date().toISOString(),
+        updated_by: ctx?.updatedBy ?? null,
       })
       .eq('id', id)
       .select('*, categories(*), locations(*)')

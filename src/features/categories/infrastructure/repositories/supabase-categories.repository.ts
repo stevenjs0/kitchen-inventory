@@ -4,7 +4,10 @@ import {
   CreateCategoryDTO,
   UpdateCategoryDTO,
 } from "@/features/categories/domain/entities";
-import { CategoryRepository } from "@/features/categories/domain/ports";
+import {
+  CategoryRepository,
+  MutationContext,
+} from "@/features/categories/domain/ports";
 
 interface CategoryDB {
   id: string;
@@ -13,6 +16,8 @@ interface CategoryDB {
   color?: string | null;
   created_at: string;
   updated_at: string;
+  created_by?: string | null;
+  updated_by?: string | null;
 }
 
 export class SupabaseCategoryRepository implements CategoryRepository {
@@ -26,6 +31,8 @@ export class SupabaseCategoryRepository implements CategoryRepository {
       color: data.color ?? undefined,
       created_at: new Date(data.created_at),
       updated_at: new Date(data.updated_at),
+      created_by: data.created_by ?? undefined,
+      updated_by: data.updated_by ?? undefined,
     };
   }
 
@@ -49,10 +56,14 @@ export class SupabaseCategoryRepository implements CategoryRepository {
     return data ? data.map((item) => this.toEntity(item)) : [];
   }
 
-  async create(data: CreateCategoryDTO): Promise<Category> {
+  async create(data: CreateCategoryDTO, ctx?: MutationContext): Promise<Category> {
     const { data: result, error } = await this.db
       .from("categories")
-      .insert(data)
+      .insert({
+        ...data,
+        created_by: ctx?.createdBy ?? ctx?.updatedBy ?? null,
+        updated_by: ctx?.updatedBy ?? ctx?.createdBy ?? null,
+      })
       .select("*")
       .single();
 
@@ -60,10 +71,14 @@ export class SupabaseCategoryRepository implements CategoryRepository {
     return this.toEntity(result);
   }
 
-  async update(id: string, data: UpdateCategoryDTO): Promise<Category> {
+  async update(id: string, data: UpdateCategoryDTO, ctx?: MutationContext): Promise<Category> {
     const { data: result, error } = await this.db
       .from("categories")
-      .update({ ...data, updated_at: new Date().toISOString() })
+      .update({
+        ...data,
+        updated_at: new Date().toISOString(),
+        updated_by: ctx?.updatedBy ?? null,
+      })
       .eq("id", id)
       .select("*")
       .single();

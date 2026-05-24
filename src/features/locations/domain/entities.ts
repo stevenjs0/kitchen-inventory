@@ -7,6 +7,9 @@ export interface Location {
   level: string;
   full_path: string;
   created_at: Date;
+  updated_at: Date;
+  created_by?: string;
+  updated_by?: string;
 }
 
 export interface CreateLocationDTO {

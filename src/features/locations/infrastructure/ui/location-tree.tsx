@@ -54,6 +54,11 @@ export function LocationTree({
                     {location.level}
                   </span>
                 </div>
+                {location.updated_by && (
+                  <div className="text-[9px] text-muted-foreground/50 mt-1">
+                    por {location.updated_by}
+                  </div>
+                )}
               </button>
             ))}
           </div>

@@ -11,6 +11,8 @@ export interface InventoryItem {
   created_at: Date;
   updated_at: Date;
   last_stock_update?: Date;
+  created_by?: string;
+  updated_by?: string;
   category?: Category;
   location?: Location;
 }

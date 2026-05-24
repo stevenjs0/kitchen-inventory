@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/client';
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -69,49 +70,49 @@ export function UserMenu() {
   const avatarUrl = userMetadata?.avatar_url;
 
   if (isLoading) {
-    return (
-      <div className="h-8 w-8 rounded-full bg-muted animate-pulse" />
-    );
+    return <div className="h-8 w-8 rounded-full bg-muted animate-pulse" />;
   }
 
   if (!user) {
     return (
-      <Button variant="ghost" size="sm" asChild>
-        <Link href="/login">Iniciar sesión</Link>
-      </Button>
+      <Link href="/login">
+        <Button variant="ghost" size="sm">
+          Iniciar sesión
+        </Button>
+      </Link>
     );
   }
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <button className="flex items-center gap-2 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-          {avatarUrl ? (
-            <Image
-              src={avatarUrl}
-              alt={displayName}
-              width={32}
-              height={32}
-              className="h-8 w-8 rounded-full object-cover"
-            />
-          ) : (
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground">
-              {displayName.charAt(0).toUpperCase()}
-            </div>
-          )}
-        </button>
+      <DropdownMenuTrigger className="flex items-center gap-2 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+        {avatarUrl ? (
+          <Image
+            src={avatarUrl}
+            alt={displayName}
+            width={32}
+            height={32}
+            className="h-8 w-8 rounded-full object-cover"
+          />
+        ) : (
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground">
+            {displayName.charAt(0).toUpperCase()}
+          </div>
+        )}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel className="font-normal">
-          <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{displayName}</p>
-            {user.email && (
-              <p className="text-xs leading-none text-muted-foreground">
-                {user.email}
-              </p>
-            )}
-          </div>
-        </DropdownMenuLabel>
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className="font-normal">
+            <div className="flex flex-col space-y-1">
+              <p className="text-sm font-medium leading-none">{displayName}</p>
+              {user.email && (
+                <p className="text-xs leading-none text-muted-foreground">
+                  {user.email}
+                </p>
+              )}
+            </div>
+          </DropdownMenuLabel>
+        </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem className="gap-2" onClick={handleSignOut}>
           <LogOutIcon className="size-4" />

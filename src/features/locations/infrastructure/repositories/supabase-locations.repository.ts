@@ -4,7 +4,10 @@ import {
   CreateLocationDTO,
   UpdateLocationDTO,
 } from "@/features/locations/domain/entities";
-import { LocationRepository } from "@/features/locations/domain/ports";
+import {
+  LocationRepository,
+  MutationContext,
+} from "@/features/locations/domain/ports";
 
 interface LocationDB {
   id: string;
@@ -15,6 +18,9 @@ interface LocationDB {
   level: string;
   full_path?: string;
   created_at: string;
+  updated_at: string;
+  created_by?: string | null;
+  updated_by?: string | null;
 }
 
 export class SupabaseLocationRepository implements LocationRepository {
@@ -30,6 +36,9 @@ export class SupabaseLocationRepository implements LocationRepository {
       level: data.level,
       full_path: data.full_path ?? "",
       created_at: new Date(data.created_at),
+      updated_at: new Date(data.updated_at),
+      created_by: data.created_by ?? undefined,
+      updated_by: data.updated_by ?? undefined,
     };
   }
 
@@ -54,10 +63,14 @@ export class SupabaseLocationRepository implements LocationRepository {
     return data ? data.map((item) => this.toEntity(item)) : [];
   }
 
-  async create(data: CreateLocationDTO): Promise<Location> {
+  async create(data: CreateLocationDTO, ctx?: MutationContext): Promise<Location> {
     const { data: result, error } = await this.db
       .from("locations")
-      .insert(data)
+      .insert({
+        ...data,
+        created_by: ctx?.createdBy ?? ctx?.updatedBy ?? null,
+        updated_by: ctx?.updatedBy ?? ctx?.createdBy ?? null,
+      })
       .select("*")
       .single();
 
@@ -65,10 +78,14 @@ export class SupabaseLocationRepository implements LocationRepository {
     return this.toEntity(result);
   }
 
-  async update(id: string, data: UpdateLocationDTO): Promise<Location> {
+  async update(id: string, data: UpdateLocationDTO, ctx?: MutationContext): Promise<Location> {
     const { data: result, error } = await this.db
       .from("locations")
-      .update(data)
+      .update({
+        ...data,
+        updated_at: new Date().toISOString(),
+        updated_by: ctx?.updatedBy ?? null,
+      })
       .eq("id", id)
       .select("*")
       .single();

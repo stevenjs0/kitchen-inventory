@@ -8,7 +8,10 @@ import { SupabaseInventoryRepository } from "@/features/inventory/infrastructure
 import { createClient } from "@/lib/supabase/server";
 
 export class InventoryService {
-  constructor(private repository: InventoryRepository) {}
+  constructor(
+    private repository: InventoryRepository,
+    private currentUserName?: string,
+  ) {}
 
   async createItem(
     data: CreateInventoryItemDTO
@@ -22,7 +25,10 @@ export class InventoryService {
     }
 
     try {
-      const item = await this.repository.create(data);
+      const item = await this.repository.create(data, {
+        createdBy: this.currentUserName,
+        updatedBy: this.currentUserName,
+      });
       return { success: true, data: item };
     } catch (error) {
       return {
@@ -43,7 +49,9 @@ export class InventoryService {
     }
 
     try {
-      const item = await this.repository.update(id, data);
+      const item = await this.repository.update(id, data, {
+        updatedBy: this.currentUserName,
+      });
       return { success: true, data: item };
     } catch (error) {
       return {
@@ -82,7 +90,9 @@ export class InventoryService {
     }
 
     try {
-      const updatedItem = await this.repository.updateStock(id, newStock);
+      const updatedItem = await this.repository.updateStock(id, newStock, {
+        updatedBy: this.currentUserName,
+      });
       return { success: true, data: updatedItem };
     } catch (error) {
       return {
@@ -123,6 +133,8 @@ export class InventoryService {
 
 export async function getInventoryService(): Promise<InventoryService> {
   const client = await createClient();
+  const { data: { user } } = await client.auth.getUser();
+  const userName = user?.user_metadata?.full_name || user?.email || undefined;
   const repository = new SupabaseInventoryRepository(client);
-  return new InventoryService(repository);
+  return new InventoryService(repository, userName);
 }

@@ -8,7 +8,10 @@ import { SupabaseCategoryRepository } from '@/features/categories/infrastructure
 import { createClient } from '@/lib/supabase/server';
 
 export class CategoriesService {
-  constructor(private repository: CategoryRepository) {
+  constructor(
+    private repository: CategoryRepository,
+    private currentUserName?: string,
+  ) {
     this.repository = repository;
   }
 
@@ -28,7 +31,10 @@ export class CategoriesService {
     }
 
     try {
-      const category = await this.repository.create(data);
+      const category = await this.repository.create(data, {
+        createdBy: this.currentUserName,
+        updatedBy: this.currentUserName,
+      });
       return { success: true, data: category };
     } catch (error) {
       return {
@@ -60,7 +66,9 @@ export class CategoriesService {
     }
 
     try {
-      const category = await this.repository.update(id, data);
+      const category = await this.repository.update(id, data, {
+        updatedBy: this.currentUserName,
+      });
       return { success: true, data: category };
     } catch (error) {
       return {
@@ -101,6 +109,8 @@ export class CategoriesService {
 
 export async function getCategoriesService(): Promise<CategoriesService> {
   const client = await createClient();
+  const { data: { user } } = await client.auth.getUser();
+  const userName = user?.user_metadata?.full_name || user?.email || undefined;
   const repository = new SupabaseCategoryRepository(client);
-  return new CategoriesService(repository);
+  return new CategoriesService(repository, userName);
 }

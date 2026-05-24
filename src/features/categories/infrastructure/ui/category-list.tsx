@@ -33,6 +33,11 @@ export function CategoryList({ categories }: CategoryListProps) {
                 {category.description}
               </p>
             )}
+            {category.updated_by && (
+              <p className="text-[10px] text-muted-foreground/60 pt-1">
+                Últ. modificación por {category.updated_by}
+              </p>
+            )}
           </CardContent>
         </Card>
       ))}

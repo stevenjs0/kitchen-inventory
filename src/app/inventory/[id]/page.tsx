@@ -142,7 +142,10 @@ export default async function ItemPage({
             </div>
             <div>
               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Última Actualización</p>
-              <p className="font-semibold">{new Date(item.updated_at).toLocaleDateString('es-ES', { dateStyle: 'long' })}</p>
+              <p className="font-semibold">
+                {new Date(item.updated_at).toLocaleDateString('es-ES', { dateStyle: 'long' })}
+                {item.updated_by && <span className="text-muted-foreground font-normal"> por {item.updated_by}</span>}
+              </p>
             </div>
           </div>
         </div>

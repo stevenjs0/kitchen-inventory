@@ -8,7 +8,10 @@ import { SupabaseLocationRepository } from "@/features/locations/infrastructure/
 import { createClient } from "@/lib/supabase/server";
 
 export class LocationsService {
-  constructor(private repository: LocationRepository) {}
+  constructor(
+    private repository: LocationRepository,
+    private currentUserName?: string,
+  ) {}
 
   async createLocation(
     data: CreateLocationDTO
@@ -22,7 +25,10 @@ export class LocationsService {
     }
 
     try {
-      const location = await this.repository.create(data);
+      const location = await this.repository.create(data, {
+        createdBy: this.currentUserName,
+        updatedBy: this.currentUserName,
+      });
       return { success: true, data: location };
     } catch (error) {
       return {
@@ -44,7 +50,9 @@ export class LocationsService {
     }
 
     try {
-      const location = await this.repository.update(id, data);
+      const location = await this.repository.update(id, data, {
+        updatedBy: this.currentUserName,
+      });
       return { success: true, data: location };
     } catch (error) {
       return {
@@ -85,6 +93,8 @@ export class LocationsService {
 
 export async function getLocationsService(): Promise<LocationsService> {
   const client = await createClient();
+  const { data: { user } } = await client.auth.getUser();
+  const userName = user?.user_metadata?.full_name || user?.email || undefined;
   const repository = new SupabaseLocationRepository(client);
-  return new LocationsService(repository);
+  return new LocationsService(repository, userName);
 }

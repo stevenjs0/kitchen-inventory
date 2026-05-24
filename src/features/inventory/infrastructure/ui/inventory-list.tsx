@@ -94,11 +94,19 @@ export function InventoryList({ items }: InventoryListProps) {
             />
           </CardHeader>
 
-            <CardContent className="p-4 pt-0 pb-3">
+            <CardContent className="p-4 pt-0 pb-3 space-y-1">
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                 <MapPin className="h-3 w-3 shrink-0" />
                 <span className="truncate">{item.location?.full_path}</span>
               </div>
+              {(item.updated_by || item.updated_at) && (
+                <div className="flex items-center gap-1 text-[10px] text-muted-foreground/60">
+                  <span>
+                    Actualizado{item.updated_by ? ` por ${item.updated_by}` : ''}
+                    {item.updated_at ? ` • ${new Date(item.updated_at).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })}` : ''}
+                  </span>
+                </div>
+              )}
             </CardContent>
 
             <CardFooter className="p-4 pt-0 flex justify-end gap-2">
