@@ -44,6 +44,10 @@ yarn-error.log*
 .env.local
 .env.production
 
+# Google OAuth credentials
+client_secret_*.json
+*.apps.googleusercontent.com.json
+
 # vercel
 .vercel
 
