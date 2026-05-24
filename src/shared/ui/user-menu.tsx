@@ -1,10 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { createClient } from '@/lib/supabase/client';
+import { useAuth } from '@/lib/auth-context';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,49 +15,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { LogOutIcon } from 'lucide-react';
 
-interface User {
-  id: string;
-  email?: string;
-  user_metadata?: {
-    avatar_url?: string;
-    full_name?: string;
-    name?: string;
-  };
-}
-
 export function UserMenu() {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const router = useRouter();
-
-  useEffect(() => {
-    const supabase = createClient();
-
-    const getUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      setUser(user as User | null);
-      setIsLoading(false);
-    };
-
-    getUser();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user as User | null);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const handleSignOut = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    router.push('/login');
-    router.refresh();
-  };
+  const { user, loading, signOut } = useAuth();
 
   const userMetadata = user?.user_metadata;
   const displayName =
@@ -69,7 +26,7 @@ export function UserMenu() {
     'Usuario';
   const avatarUrl = userMetadata?.avatar_url;
 
-  if (isLoading) {
+  if (loading) {
     return <div className="h-8 w-8 rounded-full bg-muted animate-pulse" />;
   }
 
@@ -92,6 +49,7 @@ export function UserMenu() {
             alt={displayName}
             width={32}
             height={32}
+            priority
             className="h-8 w-8 rounded-full object-cover"
           />
         ) : (
@@ -114,7 +72,7 @@ export function UserMenu() {
           </DropdownMenuLabel>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="gap-2" onClick={handleSignOut}>
+        <DropdownMenuItem className="gap-2" onClick={signOut}>
           <LogOutIcon className="size-4" />
           Cerrar sesión
         </DropdownMenuItem>

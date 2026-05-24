@@ -5,7 +5,9 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Package, MapPin, Tags } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { AuthProvider } from '@/lib/auth-context';
 import { UserMenu } from './user-menu';
+import { MobileUserMenu } from './mobile-user-menu';
 
 const navItems = [
   { href: '/inventory', label: 'Inventario', icon: Package },
@@ -64,7 +66,7 @@ export function Navbar() {
   const pathname = usePathname();
 
   return (
-    <>
+    <AuthProvider>
       {/* Desktop Header */}
       <header className="hidden md:flex sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
         <div className="container flex h-14 items-center justify-between max-w-2xl mx-auto px-4">
@@ -98,7 +100,7 @@ export function Navbar() {
 
       {/* Mobile Bottom Nav */}
       <nav className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-md border-t md:hidden z-50">
-        <div className="flex justify-around items-center h-16 space-x-4">
+        <div className="flex justify-around items-center h-16">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive =
@@ -137,10 +139,10 @@ export function Navbar() {
           })}
           <div className="flex items-center gap-2 px-2">
             <ThemeToggle />
-            <UserMenu />
+            <MobileUserMenu />
           </div>
         </div>
       </nav>
-    </>
+    </AuthProvider>
   );
 }
