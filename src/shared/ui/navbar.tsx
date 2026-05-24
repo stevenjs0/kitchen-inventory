@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Package, MapPin, Tags } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { UserMenu } from './user-menu';
 
 const navItems = [
   { href: '/inventory', label: 'Inventario', icon: Package },
@@ -89,6 +90,7 @@ export function Navbar() {
             </nav>
           </div>
           <div className="flex items-center gap-2">
+            <UserMenu />
             <ThemeToggle />
           </div>
         </div>
@@ -133,7 +135,8 @@ export function Navbar() {
               </Link>
             );
           })}
-          <div className="flex items-center px-4">
+          <div className="flex items-center gap-2 px-2">
+            <UserMenu />
             <ThemeToggle />
           </div>
         </div>
