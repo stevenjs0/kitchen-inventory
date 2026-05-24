@@ -90,15 +90,11 @@ export function Navbar() {
             </nav>
           </div>
           <div className="flex items-center gap-2">
+            <UserMenu />
             <ThemeToggle />
           </div>
         </div>
       </header>
-
-      {/* Single UserMenu instance — rendered once, positioned fixed */}
-      <div className="fixed bottom-20 right-4 z-50 md:top-3 md:bottom-auto">
-        <UserMenu />
-      </div>
 
       {/* Mobile Bottom Nav */}
       <nav className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-md border-t md:hidden z-50">
@@ -141,6 +137,7 @@ export function Navbar() {
           })}
           <div className="flex items-center gap-2 px-2">
             <ThemeToggle />
+            <UserMenu />
           </div>
         </div>
       </nav>
