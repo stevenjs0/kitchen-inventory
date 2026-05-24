@@ -96,7 +96,7 @@ export function Navbar() {
       </header>
 
       {/* Single UserMenu instance — rendered once, positioned fixed */}
-      <div className="fixed top-3 right-4 z-50">
+      <div className="fixed bottom-20 right-4 z-50 md:top-3 md:bottom-auto">
         <UserMenu />
       </div>
 
