@@ -22,6 +22,7 @@ export interface Category {
   name: string;
   description?: string;
   color?: string;
+  room_id?: string;
 }
 
 export interface Location {
@@ -32,6 +33,7 @@ export interface Location {
   position?: string;
   level: string;
   full_path: string;
+  room_id?: string;
 }
 
 export interface CreateInventoryItemDTO {
@@ -57,6 +59,7 @@ export interface UpdateInventoryItemDTO {
 export interface InventoryFilters {
   category_id?: string;
   location_id?: string;
+  room_id?: string;
   stock_status?: "normal" | "low" | "empty";
   search?: string;
 }

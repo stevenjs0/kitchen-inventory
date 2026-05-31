@@ -9,6 +9,7 @@ export async function createLocation(data: {
   side?: string;
   position?: string;
   level: string;
+  room_id: string;
 }) {
   const service = await getLocationsService();
   const result = await service.createLocation(data);

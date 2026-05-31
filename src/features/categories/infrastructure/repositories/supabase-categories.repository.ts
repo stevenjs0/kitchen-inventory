@@ -14,6 +14,7 @@ interface CategoryDB {
   name: string;
   description?: string | null;
   color?: string | null;
+  room_id: string;
   created_at: string;
   updated_at: string;
   created_by?: string | null;
@@ -29,6 +30,7 @@ export class SupabaseCategoryRepository implements CategoryRepository {
       name: data.name,
       description: data.description ?? undefined,
       color: data.color ?? undefined,
+      room_id: data.room_id,
       created_at: new Date(data.created_at),
       updated_at: new Date(data.updated_at),
       created_by: data.created_by ?? undefined,
@@ -100,5 +102,15 @@ export class SupabaseCategoryRepository implements CategoryRepository {
 
     if (!data) return null;
     return this.toEntity(data);
+  }
+
+  async findByRoomId(roomId: string): Promise<Category[]> {
+    const { data } = await this.db
+      .from("categories")
+      .select("*")
+      .eq("room_id", roomId)
+      .order("name", { ascending: true });
+
+    return data ? data.map((item) => this.toEntity(item)) : [];
   }
 }

@@ -1,3 +1,5 @@
+import { Room } from "@/features/rooms/domain/entities";
+
 export interface Location {
   id: string;
   name: string;
@@ -6,6 +8,8 @@ export interface Location {
   position?: string;
   level: string;
   full_path: string;
+  room_id: string;
+  room?: Room;
   created_at: Date;
   updated_at: Date;
   created_by?: string;
@@ -18,6 +22,7 @@ export interface CreateLocationDTO {
   side?: string;
   position?: string;
   level: string;
+  room_id: string;
 }
 
 export interface UpdateLocationDTO {
@@ -26,6 +31,7 @@ export interface UpdateLocationDTO {
   side?: string;
   position?: string;
   level?: string;
+  room_id?: string;
 }
 
 export interface LocationTree {
