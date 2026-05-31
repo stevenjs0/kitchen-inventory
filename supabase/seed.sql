@@ -4,53 +4,67 @@
 -- =====================================================
 
 -- =====================================================
--- 1. CATEGORIES
+-- 1. ROOMS
 -- =====================================================
-INSERT INTO categories (name, description, color) VALUES
-  ('Aceite', 'Aceites, margarinas y grasas', '#FCD34D'),
-  ('Cereal', 'Cereales de desayuno', '#F97316'),
-  ('Comida', 'Alimentos generales', '#10B981'),
-  ('Sazon', 'Sales, pimientas y condimentos', '#EF4444'),
-  ('Enlatados', 'Conservas y enlatados', '#3B82F6'),
-  ('Higiene', 'Productos de limpieza', '#06B6D4'),
-  ('Granos', 'Granos secos, legumbres', '#84CC16'),
-  ('Lavabo', 'Accesorios de lavabo', '#22D3EE'),
-  ('Electricos', 'Electrodomesticos y aparatos', '#6366F1'),
-  ('Plasticos', 'Recipientes y utensilios de plastico', '#A855F7'),
-  ('Picar', 'Tablas y utensilios para picar', '#EC4899'),
-  ('Metalico', 'Utensilios y recipientes de metal', '#64748B'),
-  ('Ollas', 'Ollas y sartenes', '#F97316'),
-  ('Microondas', 'Accesorios para microondas', '#14B8A6'),
-  ('Madera', 'Utensilios de madera', '#92400E'),
-  ('Vidrio', 'Recipientes de vidrio', '#38BDF8'),
-  ('Polvos', 'Polvos e ingredientes secos', '#FBBF24'),
-  ('Reposteria', 'Ingredientes para reposteria', '#FB7185'),
-  ('Hierbas', 'Hierbas y especias', '#22C55E'),
-  ('Salsas', 'Salsas y aderezos', '#DC2626'),
-  ('Esencias', 'Esencias y extractos', '#7C3AED'),
-  ('Perro', 'Comida para mascotas', '#0EA5E9'),
-  ('Pasta', 'Pastas y fideos', '#F59E0B')
+INSERT INTO rooms (name, description, icon, color) VALUES
+  ('Cocina', 'Suministros y utensilios de cocina', 'ChefHat', '#F97316'),
+  ('Bano', 'Productos de bano y aseo personal', 'Bath', '#3B82F6'),
+  ('Lavanderia', 'Productos de lavanderia y limpieza general', 'WashingMachine', '#10B981'),
+  ('Garage', 'Herramientas y suministros del garage', 'Wrench', '#6B7280'),
+  ('Bodega', 'Almacenamiento general', 'Warehouse', '#8B5CF6')
+ON CONFLICT (name) DO UPDATE SET
+  description = EXCLUDED.description,
+  icon = EXCLUDED.icon,
+  color = EXCLUDED.color;
+
+-- =====================================================
+-- 2. CATEGORIES
+-- =====================================================
+INSERT INTO categories (name, description, color, room_id) VALUES
+  ('Aceite', 'Aceites, margarinas y grasas', '#FCD34D', (SELECT id FROM rooms WHERE name = 'Cocina')),
+  ('Cereal', 'Cereales de desayuno', '#F97316', (SELECT id FROM rooms WHERE name = 'Cocina')),
+  ('Comida', 'Alimentos generales', '#10B981', (SELECT id FROM rooms WHERE name = 'Cocina')),
+  ('Sazon', 'Sales, pimientas y condimentos', '#EF4444', (SELECT id FROM rooms WHERE name = 'Cocina')),
+  ('Enlatados', 'Conservas y enlatados', '#3B82F6', (SELECT id FROM rooms WHERE name = 'Cocina')),
+  ('Higiene', 'Productos de limpieza', '#06B6D4', (SELECT id FROM rooms WHERE name = 'Cocina')),
+  ('Granos', 'Granos secos, legumbres', '#84CC16', (SELECT id FROM rooms WHERE name = 'Cocina')),
+  ('Lavabo', 'Accesorios de lavabo', '#22D3EE', (SELECT id FROM rooms WHERE name = 'Cocina')),
+  ('Electricos', 'Electrodomesticos y aparatos', '#6366F1', (SELECT id FROM rooms WHERE name = 'Cocina')),
+  ('Plasticos', 'Recipientes y utensilios de plastico', '#A855F7', (SELECT id FROM rooms WHERE name = 'Cocina')),
+  ('Picar', 'Tablas y utensilios para picar', '#EC4899', (SELECT id FROM rooms WHERE name = 'Cocina')),
+  ('Metalico', 'Utensilios y recipientes de metal', '#64748B', (SELECT id FROM rooms WHERE name = 'Cocina')),
+  ('Ollas', 'Ollas y sartenes', '#F97316', (SELECT id FROM rooms WHERE name = 'Cocina')),
+  ('Microondas', 'Accesorios para microondas', '#14B8A6', (SELECT id FROM rooms WHERE name = 'Cocina')),
+  ('Madera', 'Utensilios de madera', '#92400E', (SELECT id FROM rooms WHERE name = 'Cocina')),
+  ('Vidrio', 'Recipientes de vidrio', '#38BDF8', (SELECT id FROM rooms WHERE name = 'Cocina')),
+  ('Polvos', 'Polvos e ingredientes secos', '#FBBF24', (SELECT id FROM rooms WHERE name = 'Cocina')),
+  ('Reposteria', 'Ingredientes para reposteria', '#FB7185', (SELECT id FROM rooms WHERE name = 'Cocina')),
+  ('Hierbas', 'Hierbas y especias', '#22C55E', (SELECT id FROM rooms WHERE name = 'Cocina')),
+  ('Salsas', 'Salsas y aderezos', '#DC2626', (SELECT id FROM rooms WHERE name = 'Cocina')),
+  ('Esencias', 'Esencias y extractos', '#7C3AED', (SELECT id FROM rooms WHERE name = 'Cocina')),
+  ('Perro', 'Comida para mascotas', '#0EA5E9', (SELECT id FROM rooms WHERE name = 'Cocina')),
+  ('Pasta', 'Pastas y fideos', '#F59E0B', (SELECT id FROM rooms WHERE name = 'Cocina'))
 ON CONFLICT (name) DO UPDATE SET
   description = EXCLUDED.description,
   color = EXCLUDED.color;
 
 -- =====================================================
--- 2. LOCATIONS
+-- 3. LOCATIONS
 -- =====================================================
 
 -- Seccion Alacena
-INSERT INTO locations (name, section, side, position, level) VALUES
-  ('Alacena Arriba Izquierda, Primer Nivel', 'Alacena', 'Izquierda', 'Arriba', 'Primer Nivel'),
-  ('Alacena Arriba Derecha, Primer Nivel', 'Alacena', 'Derecha', 'Arriba', 'Primer Nivel'),
-  ('Alacena Arriba Derecha, Segundo Nivel', 'Alacena', 'Derecha', 'Arriba', 'Segundo Nivel'),
-  ('Alacena Arriba Izquierda, Segundo Nivel', 'Alacena', 'Izquierda', 'Arriba', 'Segundo Nivel'),
-  ('Alacena Arriba Derecha, Tercer Nivel', 'Alacena', 'Derecha', 'Arriba', 'Tercer Nivel'),
-  ('Alacena Arriba Izquierda, Tercer Nivel', 'Alacena', 'Izquierda', 'Arriba', 'Tercer Nivel'),
-  ('Alacena Abajo Derecha, Primer Nivel', 'Alacena', 'Derecha', 'Abajo', 'Primer Nivel'),
-  ('Alacena Abajo Derecha, Segundo Nivel', 'Alacena', 'Derecha', 'Abajo', 'Segundo Nivel'),
-  ('Alacena Abajo Izquierda, Primer Nivel', 'Alacena', 'Izquierda', 'Abajo', 'Primer Nivel'),
-  ('Alacena Abajo Izquierda, Segundo Nivel', 'Alacena', 'Izquierda', 'Abajo', 'Segundo Nivel'),
-  ('Alacena Abajo Derecha, Tercer Nivel', 'Alacena', 'Derecha', 'Abajo', 'Tercer Nivel')
+INSERT INTO locations (name, section, side, position, level, room_id) VALUES
+  ('Alacena Arriba Izquierda, Primer Nivel', 'Alacena', 'Izquierda', 'Arriba', 'Primer Nivel', (SELECT id FROM rooms WHERE name = 'Cocina')),
+  ('Alacena Arriba Derecha, Primer Nivel', 'Alacena', 'Derecha', 'Arriba', 'Primer Nivel', (SELECT id FROM rooms WHERE name = 'Cocina')),
+  ('Alacena Arriba Derecha, Segundo Nivel', 'Alacena', 'Derecha', 'Arriba', 'Segundo Nivel', (SELECT id FROM rooms WHERE name = 'Cocina')),
+  ('Alacena Arriba Izquierda, Segundo Nivel', 'Alacena', 'Izquierda', 'Arriba', 'Segundo Nivel', (SELECT id FROM rooms WHERE name = 'Cocina')),
+  ('Alacena Arriba Derecha, Tercer Nivel', 'Alacena', 'Derecha', 'Arriba', 'Tercer Nivel', (SELECT id FROM rooms WHERE name = 'Cocina')),
+  ('Alacena Arriba Izquierda, Tercer Nivel', 'Alacena', 'Izquierda', 'Arriba', 'Tercer Nivel', (SELECT id FROM rooms WHERE name = 'Cocina')),
+  ('Alacena Abajo Derecha, Primer Nivel', 'Alacena', 'Derecha', 'Abajo', 'Primer Nivel', (SELECT id FROM rooms WHERE name = 'Cocina')),
+  ('Alacena Abajo Derecha, Segundo Nivel', 'Alacena', 'Derecha', 'Abajo', 'Segundo Nivel', (SELECT id FROM rooms WHERE name = 'Cocina')),
+  ('Alacena Abajo Izquierda, Primer Nivel', 'Alacena', 'Izquierda', 'Abajo', 'Primer Nivel', (SELECT id FROM rooms WHERE name = 'Cocina')),
+  ('Alacena Abajo Izquierda, Segundo Nivel', 'Alacena', 'Izquierda', 'Abajo', 'Segundo Nivel', (SELECT id FROM rooms WHERE name = 'Cocina')),
+  ('Alacena Abajo Derecha, Tercer Nivel', 'Alacena', 'Derecha', 'Abajo', 'Tercer Nivel', (SELECT id FROM rooms WHERE name = 'Cocina'))
 ON CONFLICT (name) DO UPDATE SET
   section = EXCLUDED.section,
   side = EXCLUDED.side,
@@ -58,14 +72,14 @@ ON CONFLICT (name) DO UPDATE SET
   level = EXCLUDED.level;
 
 -- Seccion Condimentero
-INSERT INTO locations (name, section, side, position, level) VALUES
-  ('Condimentero Izquierdo, Primer nivel', 'Condimentero', 'Izquierdo', NULL, 'Primer nivel'),
-  ('Condimentero Derecho, Primer nivel', 'Condimentero', 'Derecho', NULL, 'Primer nivel'),
-  ('Condimentero Izquierdo, Segundo nivel', 'Condimentero', 'Izquierdo', NULL, 'Segundo nivel'),
-  ('Condimentero Derecho, Segundo nivel', 'Condimentero', 'Derecho', NULL, 'Segundo nivel'),
-  ('Condimentero Izquierdo, Tercer nivel', 'Condimentero', 'Izquierdo', NULL, 'Tercer nivel'),
-  ('Condimentero Derecho, Tercer nivel', 'Condimentero', 'Derecho', NULL, 'Tercer nivel'),
-  ('Condimentero Izquierdo, Cuarto nivel', 'Condimentero', 'Izquierdo', NULL, 'Cuarto nivel')
+INSERT INTO locations (name, section, side, position, level, room_id) VALUES
+  ('Condimentero Izquierdo, Primer nivel', 'Condimentero', 'Izquierdo', NULL, 'Primer nivel', (SELECT id FROM rooms WHERE name = 'Cocina')),
+  ('Condimentero Derecho, Primer nivel', 'Condimentero', 'Derecho', NULL, 'Primer nivel', (SELECT id FROM rooms WHERE name = 'Cocina')),
+  ('Condimentero Izquierdo, Segundo nivel', 'Condimentero', 'Izquierdo', NULL, 'Segundo nivel', (SELECT id FROM rooms WHERE name = 'Cocina')),
+  ('Condimentero Derecho, Segundo nivel', 'Condimentero', 'Derecho', NULL, 'Segundo nivel', (SELECT id FROM rooms WHERE name = 'Cocina')),
+  ('Condimentero Izquierdo, Tercer nivel', 'Condimentero', 'Izquierdo', NULL, 'Tercer nivel', (SELECT id FROM rooms WHERE name = 'Cocina')),
+  ('Condimentero Derecho, Tercer nivel', 'Condimentero', 'Derecho', NULL, 'Tercer nivel', (SELECT id FROM rooms WHERE name = 'Cocina')),
+  ('Condimentero Izquierdo, Cuarto nivel', 'Condimentero', 'Izquierdo', NULL, 'Cuarto nivel', (SELECT id FROM rooms WHERE name = 'Cocina'))
 ON CONFLICT (name) DO UPDATE SET
   section = EXCLUDED.section,
   side = EXCLUDED.side,
@@ -73,7 +87,7 @@ ON CONFLICT (name) DO UPDATE SET
   level = EXCLUDED.level;
 
 -- =====================================================
--- 3. INVENTORY ITEMS
+-- 4. INVENTORY ITEMS
 -- =====================================================
 
 -- Alacena - Utensilios
