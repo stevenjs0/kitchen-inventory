@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { getLocationsService } from "@/features/locations/application/services/locations.service";
+import { getLocationsService } from "@/lib/composition";
 
 export async function createLocation(data: {
   name: string;

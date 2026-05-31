@@ -4,8 +4,6 @@ import {
   CreateLocationDTO,
   UpdateLocationDTO,
 } from "@/features/locations/domain/entities";
-import { SupabaseLocationRepository } from "@/features/locations/infrastructure/repositories/supabase-locations.repository";
-import { createClient } from "@/lib/supabase/server";
 
 export class LocationsService {
   constructor(
@@ -91,10 +89,4 @@ export class LocationsService {
   }
 }
 
-export async function getLocationsService(): Promise<LocationsService> {
-  const client = await createClient();
-  const { data: { user } } = await client.auth.getUser();
-  const userName = user?.user_metadata?.full_name || user?.email || undefined;
-  const repository = new SupabaseLocationRepository(client);
-  return new LocationsService(repository, userName);
-}
+

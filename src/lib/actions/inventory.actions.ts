@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { getInventoryService } from '@/features/inventory/application/services/inventory.service';
+import { getInventoryService } from '@/lib/composition';
 import {
   CreateInventoryItemDTO,
   UpdateInventoryItemDTO,

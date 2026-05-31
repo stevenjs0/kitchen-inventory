@@ -4,8 +4,6 @@ import {
   CreateCategoryDTO,
   UpdateCategoryDTO,
 } from '@/features/categories/domain/entities';
-import { SupabaseCategoryRepository } from '@/features/categories/infrastructure/repositories/supabase-categories.repository';
-import { createClient } from '@/lib/supabase/server';
 
 export class CategoriesService {
   constructor(
@@ -107,10 +105,4 @@ export class CategoriesService {
   }
 }
 
-export async function getCategoriesService(): Promise<CategoriesService> {
-  const client = await createClient();
-  const { data: { user } } = await client.auth.getUser();
-  const userName = user?.user_metadata?.full_name || user?.email || undefined;
-  const repository = new SupabaseCategoryRepository(client);
-  return new CategoriesService(repository, userName);
-}
+

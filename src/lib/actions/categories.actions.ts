@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { getCategoriesService } from "@/features/categories/application/services/categories.service";
+import { getCategoriesService } from "@/lib/composition";
 
 export async function getAllCategories() {
   const service = await getCategoriesService();
