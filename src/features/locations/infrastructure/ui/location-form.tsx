@@ -36,10 +36,12 @@ export function LocationForm({ rooms }: LocationFormProps) {
       // The requirement says: Section → Lado → Posición → Nivel
       // We send name as the leaf node or a combination?
       // According to actions.ts, it expects: name, section, side, position, level
-      const result = await createLocation({
-        ...formData,
-        name: `${formData.section} ${formData.side} ${formData.position} ${formData.level}`.trim(),
-      });
+    const result = await createLocation({
+      ...formData,
+      side: formData.side || undefined,
+      position: formData.position || undefined,
+      name: `${formData.section} ${formData.side} ${formData.position} ${formData.level}`.trim(),
+    });
 
       if (result.success) {
         toast.success("Ubicación creada correctamente");

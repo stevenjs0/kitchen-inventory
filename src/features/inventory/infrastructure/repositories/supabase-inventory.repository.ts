@@ -205,7 +205,6 @@ export class SupabaseInventoryRepository implements InventoryRepository {
       .from('inventory_items')
       .update({
         ...data,
-        updated_at: new Date().toISOString(),
         updated_by: ctx?.updatedBy ?? null,
       })
       .eq('id', id)
@@ -219,7 +218,7 @@ export class SupabaseInventoryRepository implements InventoryRepository {
   async delete(id: string): Promise<void> {
     await this.db
       .from('inventory_items')
-      .update({ is_active: false, updated_at: new Date().toISOString() })
+      .update({ is_active: false })
       .eq('id', id);
   }
 
@@ -229,7 +228,6 @@ export class SupabaseInventoryRepository implements InventoryRepository {
       .update({
         stock_quantity: quantity,
         last_stock_update: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
         updated_by: ctx?.updatedBy ?? null,
       })
       .eq('id', id)

@@ -22,3 +22,21 @@ export interface InventoryRepository {
   findByCategory(categoryId: string): Promise<InventoryItem[]>;
   findByLocation(locationId: string): Promise<InventoryItem[]>;
 }
+
+export interface ExportRepository {
+  exportItems(items: InventoryItem[]): string;
+  getContentType(): string;
+  getFileExtension(): string;
+}
+
+export interface ImportRepository {
+  importItems(rawCsv: string): Promise<ImportResult>;
+}
+
+export interface ImportResult {
+  success: boolean;
+  created: number;
+  updated: number;
+  skipped: number;
+  errors: string[];
+}

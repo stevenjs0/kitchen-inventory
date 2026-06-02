@@ -1,12 +1,11 @@
 'use client';
 
 import { Room } from '@/features/rooms/domain/entities';
+import { ROOM_ICON_MAP } from './constants';
 import { cn } from '@/lib/utils';
-import { MapPin, Home, ChefHat, Bath, WashingMachine, Wrench, Warehouse, Bed, Sofa, Car, ShowerHead, Baby, BookOpen } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 
-const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
-  Home, ChefHat, Bath, WashingMachine, Wrench, Warehouse, Bed, Sofa, Car, ShowerHead, Baby, BookOpen, MapPin,
-};
+const ICON_MAP = ROOM_ICON_MAP;
 
 interface RoomSelectProps {
   rooms: Room[];
@@ -22,16 +21,19 @@ export function RoomSelect({
   if (!onSelect) {
     return (
       <div className="flex flex-wrap gap-2">
-        {rooms.map((room) => (
-          <div
-            key={room.id}
-            className="px-3 py-1.5 rounded-full text-sm font-medium inline-flex items-center gap-1.5 text-white"
-            style={{ backgroundColor: room.color }}
-          >
-            <MapPin className="h-3.5 w-3.5" />
-            {room.name}
-          </div>
-        ))}
+        {rooms.map((room) => {
+          const IconComponent = ICON_MAP[room.icon] || MapPin;
+          return (
+            <div
+              key={room.id}
+              className="px-3 py-1.5 rounded-full text-sm font-medium inline-flex items-center gap-1.5 text-white"
+              style={{ backgroundColor: room.color }}
+            >
+              <IconComponent className="h-3.5 w-3.5" />
+              {room.name}
+            </div>
+          );
+        })}
       </div>
     );
   }

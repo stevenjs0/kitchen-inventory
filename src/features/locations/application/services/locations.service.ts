@@ -22,6 +22,11 @@ export class LocationsService {
       return { success: false, error: "La sección es requerida" };
     }
 
+    const existing = await this.repository.findByName(data.name, data.room_id);
+    if (existing) {
+      return { success: false, error: "Ya existe una ubicación con ese nombre en este ambiente" };
+    }
+
     try {
       const location = await this.repository.create(data, {
         createdBy: this.currentUserName,

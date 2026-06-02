@@ -1,5 +1,6 @@
 import { getAllCategories } from '@/lib/actions/categories.actions';
 import { getLocationsTree } from '@/lib/actions/locations.actions';
+import { getAllRooms } from '@/lib/actions/rooms.actions';
 import { createInventoryItem } from '@/lib/actions/inventory.actions';
 import { CreateInventoryItemDTO } from '@/features/inventory/domain/entities';
 import { ItemForm } from '@/features/inventory/infrastructure/ui/item-form';
@@ -9,8 +10,11 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
 export default async function NewInventoryItemPage() {
-  const categories = await getAllCategories();
-  const locations = await getLocationsTree();
+  const [categories, locations, rooms] = await Promise.all([
+    getAllCategories(),
+    getLocationsTree(),
+    getAllRooms(),
+  ]);
 
   const handleCreate = async (data: CreateInventoryItemDTO) => {
     'use server';
@@ -42,6 +46,7 @@ export default async function NewInventoryItemPage() {
         <ItemForm
           categories={categories}
           locations={locations}
+          rooms={rooms}
           onSubmit={handleCreate}
         />
       </main>

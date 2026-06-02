@@ -2,11 +2,15 @@
 
 import { revalidatePath } from 'next/cache';
 import { getInventoryService } from '@/lib/composition';
+import { getCategoriesService } from '@/lib/composition';
+import { getLocationsService } from '@/lib/composition';
+import { getRoomsService } from '@/lib/composition';
 import {
   CreateInventoryItemDTO,
   UpdateInventoryItemDTO,
-  InventoryItem,
 } from '@/features/inventory/domain/entities';
+import { CsvImportRepository } from '@/features/inventory/infrastructure/import/csv-import.repository';
+import { ImportResult } from '@/features/inventory/domain/ports';
 
 export async function createInventoryItem(data: CreateInventoryItemDTO) {
   const service = await getInventoryService();
@@ -80,36 +84,28 @@ export async function getMissingInventoryItems() {
   return await service.getMissingItems();
 }
 
-export async function generateInventoryExport(
-  items: InventoryItem[],
-  fileName: string = 'inventario',
-) {
-  const date = new Date().toLocaleDateString('es-ES', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
+export async function importInventoryCsv(csv: string): Promise<ImportResult> {
+  const [inventoryService, categoriesService, locationsService, roomsService] =
+    await Promise.all([
+      getInventoryService(),
+      getCategoriesService(),
+      getLocationsService(),
+      getRoomsService(),
+    ]);
 
-  // Group by location/section
-  const grouped: Record<string, InventoryItem[]> = {};
-  items.forEach((item) => {
-    const section = item.location?.section || 'Sin ubicación';
-    if (!grouped[section]) {
-      grouped[section] = [];
-    }
-    grouped[section].push(item);
-  });
+  const importer = new CsvImportRepository(
+    roomsService,
+    categoriesService,
+    locationsService,
+    inventoryService,
+  );
 
-  let markdown = `# ${fileName} - ${date}\n\n`;
+  const result = await importer.importItems(csv);
 
-  Object.entries(grouped).forEach(([section, sectionItems]) => {
-    markdown += `## ${section}\n`;
-    sectionItems.forEach((item) => {
-      const stock = `${item.stock_quantity}/${item.min_stock}`;
-      markdown += `- [ ] ${item.name} (${item.category?.name || 'Sin categoría'}) - Stock: ${stock}\n`;
-    });
-    markdown += `\n`;
-  });
+  if (result.created > 0 || result.updated > 0) {
+    revalidatePath('/inventory');
+    revalidatePath('/');
+  }
 
-  return markdown;
+  return result;
 }

@@ -1,14 +1,16 @@
 import { getAllInventoryItems } from '@/lib/actions/inventory.actions';
 import { getAllCategories } from '@/lib/actions/categories.actions';
+import { getAllRooms } from '@/lib/actions/rooms.actions';
 import { InventoryContainer } from '@/features/inventory/infrastructure/ui/inventory-container';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Plus } from 'lucide-react';
 
 export default async function InventoryPage() {
-  const [items, categories] = await Promise.all([
+  const [items, categories, rooms] = await Promise.all([
     getAllInventoryItems(),
     getAllCategories(),
+    getAllRooms(),
   ]);
 
   return (
@@ -16,9 +18,9 @@ export default async function InventoryPage() {
       <header className="flex justify-between items-end pb-2 border-b">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Inventario</h1>
-          <p className="text-muted-foreground text-sm">
-            Gestiona tus suministros de cocina
-          </p>
+      <p className="text-muted-foreground text-sm">
+        Gestiona los suministros de tu hogar
+      </p>
         </div>
         <div className="flex gap-2">
           <Link href="/inventory/new">
@@ -32,7 +34,7 @@ export default async function InventoryPage() {
         </div>
       </header>
 
-      <InventoryContainer initialItems={items} categories={categories} />
+      <InventoryContainer initialItems={items} categories={categories} rooms={rooms} />
     </div>
   );
 }

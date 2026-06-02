@@ -1,6 +1,7 @@
 import { getInventoryItemById, updateInventoryItem } from "@/lib/actions/inventory.actions";
 import { getAllCategories } from "@/lib/actions/categories.actions";
 import { getLocationsTree } from "@/lib/actions/locations.actions";
+import { getAllRooms } from "@/lib/actions/rooms.actions";
 import { CreateInventoryItemDTO } from "@/features/inventory/domain/entities";
 import { ItemForm } from "@/features/inventory/infrastructure/ui/item-form";
 import { DeleteItemButton } from "@/features/inventory/infrastructure/ui/delete-item-button";
@@ -25,10 +26,11 @@ export default async function ItemPage({
   const { edit } = await searchParams;
   const isEditing = edit === "true";
 
-  const [item, categories, locations] = await Promise.all([
+  const [item, categories, locations, rooms] = await Promise.all([
     getInventoryItemById(id),
     getAllCategories(),
     getLocationsTree(),
+    getAllRooms(),
   ]);
 
   if (!item) {
@@ -63,12 +65,13 @@ export default async function ItemPage({
           </div>
         </header>
         <main className="bg-card/50 backdrop-blur-sm rounded-3xl border p-6 shadow-sm">
-          <ItemForm
-            item={item}
-            categories={categories}
-            locations={locations}
-            onSubmit={handleUpdate}
-          />
+        <ItemForm
+          item={item}
+          categories={categories}
+          locations={locations}
+          rooms={rooms}
+          onSubmit={handleUpdate}
+        />
         </main>
       </div>
     );

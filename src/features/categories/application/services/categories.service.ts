@@ -9,9 +9,7 @@ export class CategoriesService {
   constructor(
     private repository: CategoryRepository,
     private currentUserName?: string,
-  ) {
-    this.repository = repository;
-  }
+  ) {}
 
   async createCategory(
     data: CreateCategoryDTO,
@@ -20,11 +18,11 @@ export class CategoriesService {
       return { success: false, error: 'El nombre es requerido' };
     }
 
-    const existing = await this.repository.findByName(data.name);
+    const existing = await this.repository.findByName(data.name, data.room_id);
     if (existing) {
       return {
         success: false,
-        error: 'Ya existe una categoría con ese nombre',
+        error: 'Ya existe una categoría con ese nombre en este ambiente',
       };
     }
 
@@ -54,11 +52,11 @@ export class CategoriesService {
     }
 
     if (data.name) {
-      const nameExists = await this.repository.findByName(data.name);
+      const nameExists = await this.repository.findByName(data.name, data.room_id || existing.room_id);
       if (nameExists && nameExists.id !== id) {
         return {
           success: false,
-          error: 'Ya existe una categoría con ese nombre',
+          error: 'Ya existe una categoría con ese nombre en este ambiente',
         };
       }
     }

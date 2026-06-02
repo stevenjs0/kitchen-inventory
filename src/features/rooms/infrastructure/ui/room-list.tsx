@@ -1,13 +1,12 @@
 'use client';
 
 import { Room } from '@/features/rooms/domain/entities';
+import { ROOM_ICON_MAP } from './constants';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MapPin, Trash2, Home, ChefHat, Bath, WashingMachine, Wrench, Warehouse, Bed, Sofa, Car, ShowerHead, Baby, BookOpen } from 'lucide-react';
+import { MapPin, Trash2 } from 'lucide-react';
 
-const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
-  Home, ChefHat, Bath, WashingMachine, Wrench, Warehouse, Bed, Sofa, Car, ShowerHead, Baby, BookOpen, MapPin,
-};
+const ICON_MAP = ROOM_ICON_MAP;
 
 interface RoomListProps {
   rooms: Room[];

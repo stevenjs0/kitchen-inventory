@@ -7,22 +7,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Loader2, ChevronLeft, Save } from 'lucide-react';
-import Link from 'next/link';
 import { ROOM_ICON_OPTIONS } from '@/features/rooms/domain/constants';
-import { Home, ChefHat, Bath, WashingMachine, Wrench, Warehouse, Bed, Sofa, Car, ShowerHead, Baby, BookOpen, MapPin } from 'lucide-react';
+import { ROOM_ICON_MAP } from './constants';
+import { Loader2, Save } from 'lucide-react';
 
-const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
-  Home, ChefHat, Bath, WashingMachine, Wrench, Warehouse, Bed, Sofa, Car, ShowerHead, Baby, BookOpen, MapPin,
-};
+const ICON_MAP = ROOM_ICON_MAP;
 
 export function RoomForm() {
   const router = useRouter();
@@ -39,7 +29,13 @@ export function RoomForm() {
     setLoading(true);
 
     try {
-      const result = await createRoom(formData);
+      const payload = {
+        name: formData.name,
+        description: formData.description || undefined,
+        icon: formData.icon,
+        color: formData.color,
+      };
+      const result = await createRoom(payload);
       if (result.success) {
         toast.success('Ambiente creado correctamente');
         router.push('/rooms');
@@ -54,19 +50,7 @@ export function RoomForm() {
   };
 
   return (
-    <Card className="border-none shadow-none bg-transparent">
-      <form onSubmit={handleSubmit}>
-        <CardHeader className="px-0 pt-0">
-          <div className="flex items-center gap-2 mb-2">
-            <Link href="/rooms">
-              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-            </Link>
-            <CardTitle className="text-xl font-bold">Nuevo Ambiente</CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent className="px-0 space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">Nombre</Label>
             <Input
@@ -132,27 +116,25 @@ export function RoomForm() {
               </span>
             </div>
           </div>
-        </CardContent>
-        <CardFooter className="px-0 pt-6">
-          <Button
-            type="submit"
-            className="w-full h-12 rounded-xl text-base font-semibold shadow-lg shadow-primary/20 transition-all hover:shadow-primary/30 active:scale-[0.98]"
-            disabled={loading}
-          >
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                Guardando...
-              </>
-            ) : (
-              <>
-                <Save className="mr-2 h-5 w-5" />
-                Guardar Ambiente
-              </>
-            )}
-          </Button>
-        </CardFooter>
-      </form>
-    </Card>
+      <div className="pt-6">
+        <Button
+          type="submit"
+          className="w-full h-12 rounded-xl text-base font-semibold shadow-lg shadow-primary/20 transition-all hover:shadow-primary/30 active:scale-[0.98]"
+          disabled={loading}
+        >
+          {loading ? (
+            <>
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              Guardando...
+            </>
+          ) : (
+            <>
+              <Save className="mr-2 h-5 w-5" />
+              Guardar Ambiente
+            </>
+          )}
+        </Button>
+      </div>
+    </form>
   );
 }

@@ -83,11 +83,10 @@ export class SupabaseLocationRepository implements LocationRepository {
   async update(id: string, data: UpdateLocationDTO, ctx?: MutationContext): Promise<Location> {
     const { data: result, error } = await this.db
       .from("locations")
-      .update({
-        ...data,
-        updated_at: new Date().toISOString(),
-        updated_by: ctx?.updatedBy ?? null,
-      })
+    .update({
+      ...data,
+      updated_by: ctx?.updatedBy ?? null,
+    })
       .eq("id", id)
       .select("*")
       .single();
@@ -98,6 +97,22 @@ export class SupabaseLocationRepository implements LocationRepository {
 
   async delete(id: string): Promise<void> {
     await this.db.from("locations").delete().eq("id", id);
+  }
+
+  async findByName(name: string, roomId?: string): Promise<Location | null> {
+    let query = this.db
+      .from("locations")
+      .select("*")
+      .eq("name", name);
+
+    if (roomId) {
+      query = query.eq("room_id", roomId);
+    }
+
+    const { data } = await query.single();
+
+    if (!data) return null;
+    return this.toEntity(data);
   }
 
   async findBySection(section: string): Promise<Location[]> {

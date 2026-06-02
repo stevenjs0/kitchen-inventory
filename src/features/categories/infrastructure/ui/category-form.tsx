@@ -39,7 +39,10 @@ export function CategoryForm({ rooms }: CategoryFormProps) {
     setLoading(true);
 
     try {
-      const result = await createCategory(formData);
+      const result = await createCategory({
+        ...formData,
+        description: formData.description || undefined,
+      });
       if (result.success) {
         toast.success('Categoría creada correctamente');
         router.push('/categories');

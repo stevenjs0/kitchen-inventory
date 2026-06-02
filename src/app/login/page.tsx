@@ -3,54 +3,10 @@
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-
-function KitchenIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 32 32" fill="none" className={className}>
-      <rect
-        width="32"
-        height="32"
-        rx="8"
-        className="fill-zinc-950 dark:fill-zinc-100 transition-colors duration-300"
-      />
-      <path
-        d="M10 6C10 4.89543 10.8954 4 12 4H20C21.1046 4 22 4.89543 22 6V26C22 27.1046 21.1046 28 20 28H12C10.8954 28 10 27.1046 10 26V6Z"
-        className="fill-zinc-800 dark:fill-zinc-300 stroke-zinc-100 dark:stroke-zinc-950 transition-colors duration-300"
-        strokeWidth="1.5"
-      />
-      <path
-        d="M10 12.5H22"
-        className="stroke-zinc-100 dark:stroke-zinc-950 transition-colors duration-300"
-        strokeWidth="1.5"
-      />
-      <rect
-        x="11.5"
-        y="7"
-        width="1"
-        height="3"
-        rx="0.5"
-        className="fill-zinc-100 dark:fill-zinc-950 transition-colors duration-300"
-      />
-      <rect
-        x="11.5"
-        y="15"
-        width="1"
-        height="6"
-        rx="0.5"
-        className="fill-zinc-100 dark:fill-zinc-950 transition-colors duration-300"
-      />
-      <circle cx="23" cy="23" r="6" className="fill-emerald-500" />
-      <path
-        d="M20 23L22 25L26 21"
-        stroke="white"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
+import { Home, Eye, EyeOff } from 'lucide-react';
 
 function GoogleIcon({ className }: { className?: string }) {
   return (
@@ -77,10 +33,16 @@ function GoogleIcon({ className }: { className?: string }) {
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
+  const [isLocalMode, setIsLocalMode] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const supabase = createClient();
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
+    setError('');
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -90,7 +52,26 @@ export default function LoginPage() {
 
     if (error) {
       console.error('Error signing in:', error);
+      setError(error.message);
       setIsLoading(false);
+    }
+  };
+
+  const handleEmailSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      setError(error.message);
+      setIsLoading(false);
+    } else {
+      window.location.href = '/inventory';
     }
   };
 
@@ -99,11 +80,11 @@ export default function LoginPage() {
       <div className="w-full max-w-sm space-y-8">
         <div className="flex flex-col items-center text-center space-y-3">
           <div className="p-3 rounded-2xl bg-background shadow-sm border">
-            <KitchenIcon className="h-12 w-12" />
+            <Home className="h-12 w-12 text-primary" />
           </div>
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight">Inventario Cocina</h1>
-            <p className="text-sm text-muted-foreground">Gestión de inventario profesional</p>
+            <h1 className="text-2xl font-semibold tracking-tight">Inventario Hogar</h1>
+            <p className="text-sm text-muted-foreground">Gestión de inventario del hogar</p>
           </div>
         </div>
 
@@ -113,20 +94,98 @@ export default function LoginPage() {
             <CardDescription>Inicia sesión para continuar</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-3 pt-4">
-            <Button
-              variant="outline"
-              size="lg"
-              className="w-full gap-2"
-              onClick={handleGoogleSignIn}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <div className="h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
-              ) : (
-                <GoogleIcon className="h-5 w-5" />
-              )}
-              Continuar con Google
-            </Button>
+            {error && (
+              <div className="text-sm text-destructive bg-destructive/10 rounded-lg px-3 py-2">
+                {error}
+              </div>
+            )}
+
+            {isLocalMode ? (
+              <form onSubmit={handleEmailSignIn} className="grid gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="dev@inventario.local"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    disabled={isLoading}
+                    className="h-11 bg-muted/50 border-none focus-visible:ring-1 focus-visible:ring-primary rounded-xl"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Contraseña</Label>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      disabled={isLoading}
+                      className="h-11 bg-muted/50 border-none focus-visible:ring-1 focus-visible:ring-primary rounded-xl pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      tabIndex={-1}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="w-full h-11 rounded-xl font-semibold"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                  ) : (
+                    'Iniciar sesión'
+                  )}
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="w-full text-xs text-muted-foreground"
+                  onClick={() => { setIsLocalMode(false); setError(''); }}
+                >
+                  Usar Google en su lugar
+                </Button>
+              </form>
+            ) : (
+              <>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="w-full gap-2"
+                  onClick={handleGoogleSignIn}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                  ) : (
+                    <GoogleIcon className="h-5 w-5" />
+                  )}
+                  Continuar con Google
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full text-xs text-muted-foreground"
+                  onClick={() => { setIsLocalMode(true); setError(''); }}
+                >
+                  Iniciar con email/contraseña (local)
+                </Button>
+              </>
+            )}
           </CardContent>
         </Card>
 

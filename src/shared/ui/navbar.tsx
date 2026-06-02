@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { Package, MapPin, Tags } from 'lucide-react';
+import { Package, MapPin, Tags, Home } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { AuthProvider } from '@/lib/auth-context';
 import { UserMenu } from './user-menu';
@@ -11,56 +11,10 @@ import { MobileUserMenu } from './mobile-user-menu';
 
 const navItems = [
   { href: '/inventory', label: 'Inventario', icon: Package },
+  { href: '/rooms', label: 'Ambientes', icon: Home },
   { href: '/locations', label: 'Ubicaciones', icon: MapPin },
   { href: '/categories', label: 'Categorías', icon: Tags },
 ];
-
-function KitchenIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 32 32" fill="none" className={cn('h-8 w-8', className)}>
-      <rect
-        width="32"
-        height="32"
-        rx="8"
-        className="fill-zinc-950 dark:fill-zinc-100 transition-colors duration-300"
-      />
-      <path
-        d="M10 6C10 4.89543 10.8954 4 12 4H20C21.1046 4 22 4.89543 22 6V26C22 27.1046 21.1046 28 20 28H12C10.8954 28 10 27.1046 10 26V6Z"
-        className="fill-zinc-800 dark:fill-zinc-300 stroke-zinc-100 dark:stroke-zinc-950 transition-colors duration-300"
-        strokeWidth="1.5"
-      />
-      <path
-        d="M10 12.5H22"
-        className="stroke-zinc-100 dark:stroke-zinc-950 transition-colors duration-300"
-        strokeWidth="1.5"
-      />
-      <rect
-        x="11.5"
-        y="7"
-        width="1"
-        height="3"
-        rx="0.5"
-        className="fill-zinc-100 dark:fill-zinc-950 transition-colors duration-300"
-      />
-      <rect
-        x="11.5"
-        y="15"
-        width="1"
-        height="6"
-        rx="0.5"
-        className="fill-zinc-100 dark:fill-zinc-950 transition-colors duration-300"
-      />
-      <circle cx="23" cy="23" r="6" className="fill-emerald-500" />
-      <path
-        d="M20 23L22 25L26 21"
-        stroke="white"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
 
 export function Navbar() {
   const pathname = usePathname();
@@ -72,7 +26,7 @@ export function Navbar() {
         <div className="container flex h-14 items-center justify-between max-w-2xl mx-auto px-4">
           <div className="flex items-center gap-2">
             <Link href="/" className="flex items-center">
-              <KitchenIcon />
+              <Home className="h-7 w-7 text-primary" />
             </Link>
             <nav className="flex items-center gap-6 ml-6 text-sm font-medium">
               {navItems.map((item) => (

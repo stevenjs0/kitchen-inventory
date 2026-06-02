@@ -7,6 +7,10 @@ export async function createClient() {
   const url = process.env.SUPABASE_LOCAL_URL || process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const key = process.env.SUPABASE_LOCAL_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!;
 
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[supabase/server] using', url === process.env.SUPABASE_LOCAL_URL ? 'LOCAL' : 'CLOUD', 'instance');
+  }
+
   return createServerClient(
     url,
     key,
