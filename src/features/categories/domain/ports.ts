@@ -11,5 +11,6 @@ export interface CategoryRepository {
   create(data: CreateCategoryDTO, ctx?: MutationContext): Promise<Category>;
   update(id: string, data: UpdateCategoryDTO, ctx?: MutationContext): Promise<Category>;
   delete(id: string): Promise<void>;
-  findByName(name: string): Promise<Category | null>;
+  findByName(name: string, roomId?: string): Promise<Category | null>;
+  findByRoomId(roomId: string): Promise<Category[]>;
 }

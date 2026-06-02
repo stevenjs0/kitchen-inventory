@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createLocation } from "@/lib/actions/locations.actions";
+import { Room } from "@/features/rooms/domain/entities";
+import { RoomSelect } from "@/features/rooms/infrastructure/ui/room-select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,7 +13,11 @@ import { toast } from "sonner";
 import { Loader2, ChevronLeft, Save } from "lucide-react";
 import Link from "next/link";
 
-export function LocationForm() {
+interface LocationFormProps {
+  rooms: Room[];
+}
+
+export function LocationForm({ rooms }: LocationFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -19,6 +25,7 @@ export function LocationForm() {
     side: "",
     position: "",
     level: "",
+    room_id: rooms[0]?.id ?? "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -29,10 +36,12 @@ export function LocationForm() {
       // The requirement says: Section → Lado → Posición → Nivel
       // We send name as the leaf node or a combination?
       // According to actions.ts, it expects: name, section, side, position, level
-      const result = await createLocation({
-        ...formData,
-        name: `${formData.section} ${formData.side} ${formData.position} ${formData.level}`.trim(),
-      });
+    const result = await createLocation({
+      ...formData,
+      side: formData.side || undefined,
+      position: formData.position || undefined,
+      name: `${formData.section} ${formData.side} ${formData.position} ${formData.level}`.trim(),
+    });
 
       if (result.success) {
         toast.success("Ubicación creada correctamente");
@@ -61,7 +70,16 @@ export function LocationForm() {
           </div>
         </CardHeader>
         <CardContent className="px-0 space-y-4">
-          <div className="space-y-2">
+        <div className="space-y-2">
+          <Label>Ambiente</Label>
+          <RoomSelect
+            rooms={rooms}
+            selectedId={formData.room_id}
+            onSelect={(room) => setFormData({ ...formData, room_id: room.id })}
+          />
+        </div>
+
+        <div className="space-y-2">
             <Label htmlFor="section">Sección / Mueble</Label>
             <Input
               id="section"

@@ -5,13 +5,16 @@ import { NextResponse, type NextRequest } from 'next/server'
 export async function GET(request: NextRequest) {
   const currentUrl = new URL(request.url)
   const code = currentUrl.searchParams.get('code')
-  const next = currentUrl.searchParams.get('next') ?? '/inventory'
+  const nextParam = currentUrl.searchParams.get('next') ?? '/inventory'
+  const next = nextParam.startsWith('/') && !nextParam.startsWith('//') ? nextParam : '/inventory'
 
   if (code) {
     const cookieStore = await cookies()
+    const url = process.env.SUPABASE_LOCAL_URL || process.env.NEXT_PUBLIC_SUPABASE_URL!
+    const key = process.env.SUPABASE_LOCAL_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
     const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+      url,
+      key,
       {
         cookies: {
           getAll() {
@@ -23,7 +26,6 @@ export async function GET(request: NextRequest) {
                 cookieStore.set(name, value, options)
               )
             } catch {
-              // Ignore errors in read-only context
             }
           },
         },

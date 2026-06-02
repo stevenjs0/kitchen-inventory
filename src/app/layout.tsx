@@ -6,8 +6,8 @@ import { Navbar } from '@/shared/ui/navbar';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Inventario Cocina',
-  description: 'Sistema de gestión de inventario de cocina',
+  title: 'Inventario Hogar',
+  description: 'Sistema de gestión de inventario del hogar',
   icons: {
     icon: '/favicon.svg',
   },

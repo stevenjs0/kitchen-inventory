@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { getLocationsService } from "@/features/locations/application/services/locations.service";
+import { getLocationsService } from "@/lib/composition";
 
 export async function createLocation(data: {
   name: string;
@@ -9,6 +9,7 @@ export async function createLocation(data: {
   side?: string;
   position?: string;
   level: string;
+  room_id: string;
 }) {
   const service = await getLocationsService();
   const result = await service.createLocation(data);

@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { getCategoriesService } from "@/features/categories/application/services/categories.service";
+import { getCategoriesService } from "@/lib/composition";
 
 export async function getAllCategories() {
   const service = await getCategoriesService();
@@ -12,6 +12,7 @@ export async function createCategory(data: {
   name: string;
   description?: string;
   color?: string;
+  room_id: string;
 }) {
   const service = await getCategoriesService();
   const result = await service.createCategory(data);

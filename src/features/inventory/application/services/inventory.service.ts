@@ -4,8 +4,6 @@ import {
   CreateInventoryItemDTO,
   UpdateInventoryItemDTO,
 } from "@/features/inventory/domain/entities";
-import { SupabaseInventoryRepository } from "@/features/inventory/infrastructure/repositories/supabase-inventory.repository";
-import { createClient } from "@/lib/supabase/server";
 
 export class InventoryService {
   constructor(
@@ -131,10 +129,4 @@ export class InventoryService {
   }
 }
 
-export async function getInventoryService(): Promise<InventoryService> {
-  const client = await createClient();
-  const { data: { user } } = await client.auth.getUser();
-  const userName = user?.user_metadata?.full_name || user?.email || undefined;
-  const repository = new SupabaseInventoryRepository(client);
-  return new InventoryService(repository, userName);
-}
+

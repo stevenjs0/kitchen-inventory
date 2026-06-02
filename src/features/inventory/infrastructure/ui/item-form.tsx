@@ -8,6 +8,7 @@ import {
 import { UNIT_OPTIONS } from '@/features/inventory/domain/constants';
 import { Category } from '@/features/categories/domain/entities';
 import { Location } from '@/features/locations/domain/entities';
+import { Room } from '@/features/rooms/domain/entities';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -19,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { ROOM_ICON_MAP } from '@/features/rooms/infrastructure/ui/constants';
 import {
   Package,
   Tag,
@@ -31,7 +33,11 @@ import {
   Layers,
   CircleDot,
   CheckCircle2,
+  ChevronRight,
+  Home,
 } from 'lucide-react';
+
+const ICON_MAP = ROOM_ICON_MAP;
 
 interface FieldError {
   name?: string;
@@ -45,6 +51,7 @@ interface ItemFormProps {
   item?: InventoryItem;
   categories: Category[];
   locations: Location[];
+  rooms: Room[];
   onSubmit: (data: CreateInventoryItemDTO) => Promise<void>;
   onCancel?: () => void;
 }
@@ -57,6 +64,7 @@ export function ItemForm({
   item,
   categories,
   locations,
+  rooms,
   onSubmit,
   onCancel,
 }: ItemFormProps) {
@@ -68,16 +76,42 @@ export function ItemForm({
     return categories.find((cat) => cat.id === categoryId)?.name || null;
   };
 
-  // Extract unique sections from locations
+  // Get initial room from existing item
+  const getInitialRoomId = () => {
+    if (item?.location_id) {
+      const location = locations.find((loc) => loc.id === item.location_id);
+      return location?.room_id || '';
+    }
+    if (item?.category_id) {
+      const category = categories.find((cat) => cat.id === item.category_id);
+      return category?.room_id || '';
+    }
+    return '';
+  };
+
+  const [selectedRoomId, setSelectedRoomId] = useState(getInitialRoomId);
+
+  // Filter categories and locations by selected room
+  const filteredCategories = useMemo(() => {
+    if (!selectedRoomId) return categories;
+    return categories.filter((cat) => cat.room_id === selectedRoomId);
+  }, [categories, selectedRoomId]);
+
+  const filteredLocations = useMemo(() => {
+    if (!selectedRoomId) return locations;
+    return locations.filter((loc) => loc.room_id === selectedRoomId);
+  }, [locations, selectedRoomId]);
+
+  // Extract unique sections from filtered locations
   const sections = useMemo(() => {
-    const uniqueSections = new Set(locations.map((loc) => loc.section));
+    const uniqueSections = new Set(filteredLocations.map((loc) => loc.section));
     return Array.from(uniqueSections).sort();
-  }, [locations]);
+  }, [filteredLocations]);
 
   // Initialize state from existing item
   const getInitialSection = () => {
     if (item?.location_id) {
-      const location = locations.find((loc) => loc.id === item.location_id);
+      const location = filteredLocations.find((loc) => loc.id === item.location_id);
       return location?.section || '';
     }
     return '';
@@ -85,7 +119,7 @@ export function ItemForm({
 
   const getInitialLevel = () => {
     if (item?.location_id) {
-      const location = locations.find((loc) => loc.id === item.location_id);
+      const location = filteredLocations.find((loc) => loc.id === item.location_id);
       return location?.level || '';
     }
     return '';
@@ -93,7 +127,7 @@ export function ItemForm({
 
   const getInitialSide = () => {
     if (item?.location_id) {
-      const location = locations.find((loc) => loc.id === item.location_id);
+      const location = filteredLocations.find((loc) => loc.id === item.location_id);
       return location?.side || '';
     }
     return '';
@@ -101,7 +135,7 @@ export function ItemForm({
 
   const getInitialPosition = () => {
     if (item?.location_id) {
-      const location = locations.find((loc) => loc.id === item.location_id);
+      const location = filteredLocations.find((loc) => loc.id === item.location_id);
       return location?.position || '';
     }
     return '';
@@ -116,18 +150,18 @@ export function ItemForm({
   const availableLevels = useMemo(() => {
     if (!selectedSection) return [];
     const levels = new Set(
-      locations
+      filteredLocations
         .filter((loc) => loc.section === selectedSection)
         .map((loc) => loc.level),
     );
     return Array.from(levels).sort();
-  }, [locations, selectedSection]);
+  }, [filteredLocations, selectedSection]);
 
   // Get available sides for selected section and level
   const availableSides = useMemo(() => {
     if (!selectedSection || !selectedLevel) return [];
     const sides = new Set(
-      locations
+      filteredLocations
         .filter(
           (loc) =>
             loc.section === selectedSection && loc.level === selectedLevel,
@@ -136,12 +170,12 @@ export function ItemForm({
         .filter((side): side is string => Boolean(side)),
     );
     return Array.from(sides).sort();
-  }, [locations, selectedSection, selectedLevel]);
+  }, [filteredLocations, selectedSection, selectedLevel]);
 
   // Get available positions for selected section, level, and side
   const availablePositions = useMemo(() => {
     if (!selectedSection || !selectedLevel) return [];
-    return locations
+    return filteredLocations
       .filter(
         (loc) =>
           loc.section === selectedSection &&
@@ -150,12 +184,12 @@ export function ItemForm({
       )
       .map((loc) => loc.position)
       .filter((pos): pos is string => Boolean(pos));
-  }, [locations, selectedSection, selectedLevel, selectedSide]);
+  }, [filteredLocations, selectedSection, selectedLevel, selectedSide]);
 
   // Find the location_id based on selections
   const selectedLocationId = useMemo(() => {
     if (!selectedSection || !selectedLevel) return '';
-    const found = locations.find(
+    const found = filteredLocations.find(
       (loc) =>
         loc.section === selectedSection &&
         loc.level === selectedLevel &&
@@ -163,7 +197,7 @@ export function ItemForm({
         (selectedPosition ? loc.position === selectedPosition : !loc.position),
     );
     return found?.id || '';
-  }, [locations, selectedSection, selectedLevel, selectedSide, selectedPosition]);
+  }, [filteredLocations, selectedSection, selectedLevel, selectedSide, selectedPosition]);
 
   const [formData, setFormData] = useState({
     name: item?.name || '',
@@ -173,6 +207,17 @@ export function ItemForm({
     unit: item?.unit || 'unidad',
     notes: item?.notes || '',
   });
+
+  // Reset location selections when room changes
+  const handleRoomChange = (roomId: string) => {
+    setSelectedRoomId(roomId);
+    setSelectedSection('');
+    setSelectedLevel('');
+    setSelectedSide('');
+    setSelectedPosition('');
+    setFormData((prev) => ({ ...prev, category_id: '' }));
+    setErrors((prev) => ({ ...prev, location_id: undefined, category_id: undefined }));
+  };
 
   // Reset level and side when section changes
   const handleSectionChange = (section: string) => {
@@ -242,6 +287,7 @@ export function ItemForm({
         location_id: selectedLocationId,
         stock_quantity: parseInt(formData.stock_quantity, 10),
         min_stock: parseInt(formData.min_stock, 10),
+        notes: formData.notes || undefined,
       });
     } finally {
       setLoading(false);
@@ -262,7 +308,73 @@ export function ItemForm({
 
   return (
     <form onSubmit={handleSubmit} noValidate className="space-y-6">
-      {/* Section 1: Basic Info */}
+    {/* Step 0: Room Selection */}
+    <div className="space-y-3">
+      <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+        <Home className="h-3 w-3" />
+        Ambiente
+        <RequiredMarker />
+      </Label>
+      <div className="flex flex-wrap gap-2">
+        {rooms.map((room) => {
+          const RoomIcon = ICON_MAP[room.icon] || Home;
+          return (
+            <button
+              key={room.id}
+              type="button"
+              onClick={() => handleRoomChange(room.id)}
+              className={`
+                px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 inline-flex items-center gap-2
+                ${selectedRoomId === room.id
+                  ? 'text-white shadow-md scale-[1.02]'
+                  : 'bg-muted/50 text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer'}
+              `}
+              style={selectedRoomId === room.id ? { backgroundColor: room.color } : undefined}
+            >
+              <RoomIcon className="h-4 w-4" />
+              {room.name}
+              {selectedRoomId === room.id && <CheckCircle2 className="h-3.5 w-3.5" />}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+
+    {/* Breadcrumb */}
+    {selectedRoomId && (
+      <div className="flex items-center gap-1.5 text-sm text-muted-foreground bg-muted/30 rounded-lg px-3 py-2 overflow-x-auto">
+        <Home className="h-3.5 w-3.5 shrink-0" />
+        <span className="font-medium text-foreground whitespace-nowrap">
+          {rooms.find((r) => r.id === selectedRoomId)?.name}
+        </span>
+        {selectedSection && (
+          <>
+            <ChevronRight className="h-3.5 w-3.5 shrink-0" />
+            <button type="button" onClick={() => handleSectionChange('')} className="hover:text-primary whitespace-nowrap">{selectedSection}</button>
+          </>
+        )}
+        {selectedLevel && (
+          <>
+            <ChevronRight className="h-3.5 w-3.5 shrink-0" />
+            <button type="button" onClick={() => handleLevelChange('')} className="hover:text-primary whitespace-nowrap">{selectedLevel}</button>
+          </>
+        )}
+        {selectedSide && (
+          <>
+            <ChevronRight className="h-3.5 w-3.5 shrink-0" />
+            <button type="button" onClick={() => handleSideChange('')} className="hover:text-primary whitespace-nowrap">{selectedSide}</button>
+          </>
+        )}
+        {selectedPosition && (
+          <>
+            <ChevronRight className="h-3.5 w-3.5 shrink-0" />
+            <span className="whitespace-nowrap">{selectedPosition}</span>
+          </>
+        )}
+      </div>
+    )}
+
+    {/* Section 1: Basic Info */}
       <div className="space-y-5">
         <div className="space-y-2">
           <Label
@@ -295,48 +407,54 @@ export function ItemForm({
             Categoría
             <RequiredMarker />
           </Label>
-          <Select
-            value={formData.category_id}
-            onValueChange={(value) => {
-              setFormData({ ...formData, category_id: value || '' });
-              if (errors.category_id) setErrors((prev) => ({ ...prev, category_id: undefined }));
-            }}
+        <Select
+          value={formData.category_id}
+          onValueChange={(value) => {
+            setFormData({ ...formData, category_id: value || '' });
+            if (errors.category_id) setErrors((prev) => ({ ...prev, category_id: undefined }));
+          }}
+          disabled={!selectedRoomId}
+        >
+          <SelectTrigger
+            className={`h-12 ${errors.category_id ? 'border-destructive focus-visible:ring-destructive' : 'border-border'} bg-background`}
           >
-            <SelectTrigger
-              className={`h-12 ${errors.category_id ? 'border-destructive focus-visible:ring-destructive' : 'border-border'} bg-background`}
-            >
-              <SelectValue placeholder="Seleccionar categoría">
-                {getCategoryName(formData.category_id) || (
-                  <span className="text-muted-foreground">Seleccionar categoría</span>
-                )}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {categories.map((cat) => (
-                <SelectItem key={cat.id} value={cat.id}>
-                  {cat.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            <SelectValue placeholder={selectedRoomId ? 'Seleccionar categoría' : 'Primero selecciona ambiente'}>
+              {getCategoryName(formData.category_id) || (
+                <span className="text-muted-foreground">{selectedRoomId ? 'Seleccionar categoría' : 'Primero selecciona ambiente'}</span>
+              )}
+            </SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            {filteredCategories.map((cat) => (
+              <SelectItem key={cat.id} value={cat.id}>
+                {cat.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
           {renderFieldError('category_id')}
         </div>
       </div>
 
-      {/* Divider */}
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t" />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-3 text-muted-foreground">
-            Ubicación del Item
-          </span>
-        </div>
+    {/* Divider */}
+    <div className="relative">
+      <div className="absolute inset-0 flex items-center">
+        <span className="w-full border-t" />
       </div>
+      <div className="relative flex justify-center text-xs uppercase">
+        <span className="bg-background px-3 text-muted-foreground">
+          Ubicación del Item
+        </span>
+      </div>
+    </div>
 
-      {/* Section 2: Location - Card Style */}
-      <div className="rounded-xl border bg-card text-card-foreground shadow-sm p-5 space-y-5">
+    {/* Section 2: Location - Card Style */}
+    {!selectedRoomId ? (
+      <div className="rounded-xl border bg-muted/30 text-muted-foreground shadow-sm p-5 text-center text-sm">
+        Selecciona un ambiente para ver las ubicaciones disponibles
+      </div>
+    ) : (
+    <div className="rounded-xl border bg-card text-card-foreground shadow-sm p-5 space-y-5">
         <div className="flex items-center gap-2">
           <MapPin className="h-4 w-4 text-primary" />
           <span className="text-sm font-semibold">Ubicación</span>
@@ -482,16 +600,17 @@ export function ItemForm({
           </div>
         )}
 
-        {/* Location Preview */}
-        {isLocationComplete && locations.find((l) => l.id === selectedLocationId) && (
-          <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 rounded-lg px-3 py-2">
-            <MapPin className="h-3.5 w-3.5" />
-            {locations.find((l) => l.id === selectedLocationId)?.full_path}
-          </div>
-        )}
-      </div>
+      {/* Location Preview */}
+      {isLocationComplete && filteredLocations.find((l) => l.id === selectedLocationId) && (
+        <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 rounded-lg px-3 py-2">
+          <MapPin className="h-3.5 w-3.5" />
+          {filteredLocations.find((l) => l.id === selectedLocationId)?.full_path}
+        </div>
+      )}
+    </div>
+    )}
 
-      {/* Section 3: Stock Info */}
+    {/* Section 3: Stock Info */}
       <div className="space-y-4">
         <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
           <Hash className="h-3 w-3" />

@@ -1,0 +1,140 @@
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { createRoom } from '@/lib/actions/rooms.actions';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { toast } from 'sonner';
+import { ROOM_ICON_OPTIONS } from '@/features/rooms/domain/constants';
+import { ROOM_ICON_MAP } from './constants';
+import { Loader2, Save } from 'lucide-react';
+
+const ICON_MAP = ROOM_ICON_MAP;
+
+export function RoomForm() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    icon: 'Home',
+    color: '#6B7280',
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const payload = {
+        name: formData.name,
+        description: formData.description || undefined,
+        icon: formData.icon,
+        color: formData.color,
+      };
+      const result = await createRoom(payload);
+      if (result.success) {
+        toast.success('Ambiente creado correctamente');
+        router.push('/rooms');
+      } else {
+        toast.error(result.error || 'Error al crear el ambiente');
+      }
+    } catch {
+      toast.error('Error inesperado al crear el ambiente');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="name">Nombre</Label>
+            <Input
+              id="name"
+              placeholder="Ej. Cocina, Baño, Garaje..."
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              required
+              disabled={loading}
+              className="h-11 bg-muted/50 border-none focus-visible:ring-1 focus-visible:ring-primary rounded-xl"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="description">Descripción (Opcional)</Label>
+            <Textarea
+              id="description"
+              placeholder="Breve descripción del ambiente..."
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              disabled={loading}
+              className="bg-muted/50 border-none focus-visible:ring-1 focus-visible:ring-primary rounded-xl min-h-25"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Ícono</Label>
+            <div className="flex flex-wrap gap-2">
+              {ROOM_ICON_OPTIONS.map((iconName) => {
+                const IconComponent = ICON_MAP[iconName];
+                if (!IconComponent) return null;
+                return (
+                  <button
+                    key={iconName}
+                    type="button"
+                    onClick={() => setFormData({ ...formData, icon: iconName })}
+                    className={`p-2.5 rounded-xl transition-all ${
+                      formData.icon === iconName
+                        ? 'bg-primary text-primary-foreground shadow-sm'
+                        : 'bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    <IconComponent className="h-5 w-5" />
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="color">Color distintivo</Label>
+            <div className="flex gap-3 items-center">
+              <input
+                id="color"
+                type="color"
+                value={formData.color}
+                onChange={(e) => setFormData({ ...formData, color: e.target.value })}
+                disabled={loading}
+                className="h-10 w-20 rounded cursor-pointer bg-transparent"
+              />
+              <span className="text-xs text-muted-foreground font-mono uppercase">
+                {formData.color}
+              </span>
+            </div>
+          </div>
+      <div className="pt-6">
+        <Button
+          type="submit"
+          className="w-full h-12 rounded-xl text-base font-semibold shadow-lg shadow-primary/20 transition-all hover:shadow-primary/30 active:scale-[0.98]"
+          disabled={loading}
+        >
+          {loading ? (
+            <>
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              Guardando...
+            </>
+          ) : (
+            <>
+              <Save className="mr-2 h-5 w-5" />
+              Guardar Ambiente
+            </>
+          )}
+        </Button>
+      </div>
+    </form>
+  );
+}

@@ -11,5 +11,7 @@ export interface LocationRepository {
   create(data: CreateLocationDTO, ctx?: MutationContext): Promise<Location>;
   update(id: string, data: UpdateLocationDTO, ctx?: MutationContext): Promise<Location>;
   delete(id: string): Promise<void>;
+  findByName(name: string, roomId?: string): Promise<Location | null>;
   findBySection(section: string): Promise<Location[]>;
+  findByRoomId(roomId: string): Promise<Location[]>;
 }

@@ -3,33 +3,37 @@
 import { Button } from '@/components/ui/button';
 import { FileDown, Loader2 } from 'lucide-react';
 import { InventoryItem } from '@/features/inventory/domain/entities';
+import { Room } from '@/features/rooms/domain/entities';
+import { CsvExportRepository } from '@/features/inventory/infrastructure/export/csv-export.repository';
 import { useState } from 'react';
-import { generateInventoryExport } from '@/lib/actions/inventory.actions';
 
 interface ExportButtonProps {
   items: InventoryItem[];
+  rooms: Room[];
   fileName?: string;
 }
 
 export function ExportButton({
   items,
+  rooms,
   fileName = 'inventario',
 }: ExportButtonProps) {
   const [isExporting, setIsExporting] = useState(false);
 
-  const handleExport = async () => {
+  const handleExport = () => {
     setIsExporting(true);
     try {
-      const markdown = await generateInventoryExport(items, fileName);
+      const exporter = new CsvExportRepository(rooms);
+      const csv = exporter.exportItems(items);
 
-      // Create blob and download
-      const blob = new Blob([markdown], {
-        type: 'text/markdown; charset=utf-8',
+      const BOM = '\uFEFF';
+      const blob = new Blob([BOM + csv], {
+        type: exporter.getContentType(),
       });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${fileName}-${new Date().toISOString().split('T')[0]}.md`;
+      a.download = `${fileName}-${new Date().toISOString().split('T')[0]}.${exporter.getFileExtension()}`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

@@ -14,6 +14,7 @@ interface CategoryDB {
   name: string;
   description?: string | null;
   color?: string | null;
+  room_id: string;
   created_at: string;
   updated_at: string;
   created_by?: string | null;
@@ -29,6 +30,7 @@ export class SupabaseCategoryRepository implements CategoryRepository {
       name: data.name,
       description: data.description ?? undefined,
       color: data.color ?? undefined,
+      room_id: data.room_id,
       created_at: new Date(data.created_at),
       updated_at: new Date(data.updated_at),
       created_by: data.created_by ?? undefined,
@@ -74,11 +76,10 @@ export class SupabaseCategoryRepository implements CategoryRepository {
   async update(id: string, data: UpdateCategoryDTO, ctx?: MutationContext): Promise<Category> {
     const { data: result, error } = await this.db
       .from("categories")
-      .update({
-        ...data,
-        updated_at: new Date().toISOString(),
-        updated_by: ctx?.updatedBy ?? null,
-      })
+    .update({
+      ...data,
+      updated_by: ctx?.updatedBy ?? null,
+    })
       .eq("id", id)
       .select("*")
       .single();
@@ -91,14 +92,29 @@ export class SupabaseCategoryRepository implements CategoryRepository {
     await this.db.from("categories").delete().eq("id", id);
   }
 
-  async findByName(name: string): Promise<Category | null> {
-    const { data } = await this.db
+  async findByName(name: string, roomId?: string): Promise<Category | null> {
+    let query = this.db
       .from("categories")
       .select("*")
-      .eq("name", name)
-      .single();
+      .eq("name", name);
+
+    if (roomId) {
+      query = query.eq("room_id", roomId);
+    }
+
+    const { data } = await query.single();
 
     if (!data) return null;
     return this.toEntity(data);
+  }
+
+  async findByRoomId(roomId: string): Promise<Category[]> {
+    const { data } = await this.db
+      .from("categories")
+      .select("*")
+      .eq("room_id", roomId)
+      .order("name", { ascending: true });
+
+    return data ? data.map((item) => this.toEntity(item)) : [];
   }
 }

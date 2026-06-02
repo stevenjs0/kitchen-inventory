@@ -14,6 +14,7 @@ interface CategoryDB {
   name: string;
   description?: string | null;
   color?: string | null;
+  room_id?: string | null;
 }
 
 interface LocationDB {
@@ -24,6 +25,7 @@ interface LocationDB {
   position?: string | null;
   level: string;
   full_path?: string | null;
+  room_id?: string | null;
 }
 
 interface InventoryItemDB {
@@ -100,25 +102,27 @@ export class SupabaseInventoryRepository implements InventoryRepository {
         : undefined,
       created_by: data.created_by ?? undefined,
       updated_by: data.updated_by ?? undefined,
-      category: data.categories
-        ? {
-            id: data.categories.id,
-            name: data.categories.name,
-            description: data.categories.description ?? undefined,
-            color: data.categories.color ?? undefined,
-          }
-        : undefined,
-      location: data.locations
-        ? {
-            id: data.locations.id,
-            name: data.locations.name,
-            section: data.locations.section,
-            side: data.locations.side ?? undefined,
-            position: data.locations.position ?? undefined,
-            level: data.locations.level,
-            full_path: this.formatLocationPath(data.locations),
-          }
-        : undefined,
+    category: data.categories
+      ? {
+          id: data.categories.id,
+          name: data.categories.name,
+          description: data.categories.description ?? undefined,
+          color: data.categories.color ?? undefined,
+          room_id: data.categories.room_id ?? undefined,
+        }
+      : undefined,
+    location: data.locations
+      ? {
+          id: data.locations.id,
+          name: data.locations.name,
+          section: data.locations.section,
+          side: data.locations.side ?? undefined,
+          position: data.locations.position ?? undefined,
+          level: data.locations.level,
+          full_path: this.formatLocationPath(data.locations),
+          room_id: data.locations.room_id ?? undefined,
+        }
+      : undefined,
     };
   }
 
@@ -144,9 +148,13 @@ export class SupabaseInventoryRepository implements InventoryRepository {
       query = query.eq('category_id', filters.category_id);
     }
 
-    if (filters?.location_id) {
-      query = query.eq('location_id', filters.location_id);
-    }
+  if (filters?.location_id) {
+    query = query.eq('location_id', filters.location_id);
+  }
+
+  if (filters?.room_id) {
+    query = query.or(`categories.room_id.eq.${filters.room_id},locations.room_id.eq.${filters.room_id}`);
+  }
 
     if (filters?.stock_status === 'empty') {
       query = query.eq('stock_quantity', 0);
@@ -197,7 +205,6 @@ export class SupabaseInventoryRepository implements InventoryRepository {
       .from('inventory_items')
       .update({
         ...data,
-        updated_at: new Date().toISOString(),
         updated_by: ctx?.updatedBy ?? null,
       })
       .eq('id', id)
@@ -211,7 +218,7 @@ export class SupabaseInventoryRepository implements InventoryRepository {
   async delete(id: string): Promise<void> {
     await this.db
       .from('inventory_items')
-      .update({ is_active: false, updated_at: new Date().toISOString() })
+      .update({ is_active: false })
       .eq('id', id);
   }
 
@@ -221,7 +228,6 @@ export class SupabaseInventoryRepository implements InventoryRepository {
       .update({
         stock_quantity: quantity,
         last_stock_update: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
         updated_by: ctx?.updatedBy ?? null,
       })
       .eq('id', id)

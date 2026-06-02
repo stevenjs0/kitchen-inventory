@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createCategory } from '@/lib/actions/categories.actions';
+import { Room } from '@/features/rooms/domain/entities';
+import { RoomSelect } from '@/features/rooms/infrastructure/ui/room-select';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,13 +20,18 @@ import { toast } from 'sonner';
 import { Loader2, ChevronLeft, Save } from 'lucide-react';
 import Link from 'next/link';
 
-export function CategoryForm() {
+interface CategoryFormProps {
+  rooms: Room[];
+}
+
+export function CategoryForm({ rooms }: CategoryFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    color: '#3b82f6', // Default blue
+    color: '#3b82f6',
+    room_id: rooms[0]?.id ?? '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -32,7 +39,10 @@ export function CategoryForm() {
     setLoading(true);
 
     try {
-      const result = await createCategory(formData);
+      const result = await createCategory({
+        ...formData,
+        description: formData.description || undefined,
+      });
       if (result.success) {
         toast.success('Categoría creada correctamente');
         router.push('/categories');
@@ -90,6 +100,15 @@ export function CategoryForm() {
               }
               disabled={loading}
               className="bg-muted/50 border-none focus-visible:ring-1 focus-visible:ring-primary rounded-xl min-h-25"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Ambiente</Label>
+            <RoomSelect
+              rooms={rooms}
+              selectedId={formData.room_id}
+              onSelect={(room) => setFormData({ ...formData, room_id: room.id })}
             />
           </div>
 

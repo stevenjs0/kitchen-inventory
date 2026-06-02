@@ -4,16 +4,12 @@ import {
   CreateCategoryDTO,
   UpdateCategoryDTO,
 } from '@/features/categories/domain/entities';
-import { SupabaseCategoryRepository } from '@/features/categories/infrastructure/repositories/supabase-categories.repository';
-import { createClient } from '@/lib/supabase/server';
 
 export class CategoriesService {
   constructor(
     private repository: CategoryRepository,
     private currentUserName?: string,
-  ) {
-    this.repository = repository;
-  }
+  ) {}
 
   async createCategory(
     data: CreateCategoryDTO,
@@ -22,11 +18,11 @@ export class CategoriesService {
       return { success: false, error: 'El nombre es requerido' };
     }
 
-    const existing = await this.repository.findByName(data.name);
+    const existing = await this.repository.findByName(data.name, data.room_id);
     if (existing) {
       return {
         success: false,
-        error: 'Ya existe una categoría con ese nombre',
+        error: 'Ya existe una categoría con ese nombre en este ambiente',
       };
     }
 
@@ -56,11 +52,11 @@ export class CategoriesService {
     }
 
     if (data.name) {
-      const nameExists = await this.repository.findByName(data.name);
+      const nameExists = await this.repository.findByName(data.name, data.room_id || existing.room_id);
       if (nameExists && nameExists.id !== id) {
         return {
           success: false,
-          error: 'Ya existe una categoría con ese nombre',
+          error: 'Ya existe una categoría con ese nombre en este ambiente',
         };
       }
     }
@@ -107,10 +103,4 @@ export class CategoriesService {
   }
 }
 
-export async function getCategoriesService(): Promise<CategoriesService> {
-  const client = await createClient();
-  const { data: { user } } = await client.auth.getUser();
-  const userName = user?.user_metadata?.full_name || user?.email || undefined;
-  const repository = new SupabaseCategoryRepository(client);
-  return new CategoriesService(repository, userName);
-}
+

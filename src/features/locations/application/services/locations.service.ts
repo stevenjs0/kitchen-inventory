@@ -4,8 +4,6 @@ import {
   CreateLocationDTO,
   UpdateLocationDTO,
 } from "@/features/locations/domain/entities";
-import { SupabaseLocationRepository } from "@/features/locations/infrastructure/repositories/supabase-locations.repository";
-import { createClient } from "@/lib/supabase/server";
 
 export class LocationsService {
   constructor(
@@ -22,6 +20,11 @@ export class LocationsService {
 
     if (!data.section || data.section.trim().length === 0) {
       return { success: false, error: "La sección es requerida" };
+    }
+
+    const existing = await this.repository.findByName(data.name, data.room_id);
+    if (existing) {
+      return { success: false, error: "Ya existe una ubicación con ese nombre en este ambiente" };
     }
 
     try {
@@ -91,10 +94,4 @@ export class LocationsService {
   }
 }
 
-export async function getLocationsService(): Promise<LocationsService> {
-  const client = await createClient();
-  const { data: { user } } = await client.auth.getUser();
-  const userName = user?.user_metadata?.full_name || user?.email || undefined;
-  const repository = new SupabaseLocationRepository(client);
-  return new LocationsService(repository, userName);
-}
+

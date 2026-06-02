@@ -17,6 +17,7 @@ interface LocationDB {
   position?: string | null;
   level: string;
   full_path?: string;
+  room_id: string;
   created_at: string;
   updated_at: string;
   created_by?: string | null;
@@ -35,6 +36,7 @@ export class SupabaseLocationRepository implements LocationRepository {
       position: data.position ?? undefined,
       level: data.level,
       full_path: data.full_path ?? "",
+      room_id: data.room_id,
       created_at: new Date(data.created_at),
       updated_at: new Date(data.updated_at),
       created_by: data.created_by ?? undefined,
@@ -81,11 +83,10 @@ export class SupabaseLocationRepository implements LocationRepository {
   async update(id: string, data: UpdateLocationDTO, ctx?: MutationContext): Promise<Location> {
     const { data: result, error } = await this.db
       .from("locations")
-      .update({
-        ...data,
-        updated_at: new Date().toISOString(),
-        updated_by: ctx?.updatedBy ?? null,
-      })
+    .update({
+      ...data,
+      updated_by: ctx?.updatedBy ?? null,
+    })
       .eq("id", id)
       .select("*")
       .single();
@@ -98,11 +99,38 @@ export class SupabaseLocationRepository implements LocationRepository {
     await this.db.from("locations").delete().eq("id", id);
   }
 
+  async findByName(name: string, roomId?: string): Promise<Location | null> {
+    let query = this.db
+      .from("locations")
+      .select("*")
+      .eq("name", name);
+
+    if (roomId) {
+      query = query.eq("room_id", roomId);
+    }
+
+    const { data } = await query.single();
+
+    if (!data) return null;
+    return this.toEntity(data);
+  }
+
   async findBySection(section: string): Promise<Location[]> {
     const { data } = await this.db
       .from("locations")
       .select("*")
       .eq("section", section)
+      .order("level", { ascending: true });
+
+    return data ? data.map((item) => this.toEntity(item)) : [];
+  }
+
+  async findByRoomId(roomId: string): Promise<Location[]> {
+    const { data } = await this.db
+      .from("locations")
+      .select("*")
+      .eq("room_id", roomId)
+      .order("section", { ascending: true })
       .order("level", { ascending: true });
 
     return data ? data.map((item) => this.toEntity(item)) : [];
