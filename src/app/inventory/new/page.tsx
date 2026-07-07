@@ -3,11 +3,10 @@ import { getLocationsTree } from '@/lib/actions/locations.actions';
 import { getAllRooms } from '@/lib/actions/rooms.actions';
 import { createInventoryItem } from '@/lib/actions/inventory.actions';
 import { CreateInventoryItemDTO } from '@/features/inventory/domain/entities';
-import { ItemForm } from '@/features/inventory/infrastructure/ui/item-form';
+import { NewItemForm } from '@/features/inventory/infrastructure/ui/new-item-form';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
 
 export default async function NewInventoryItemPage() {
   const [categories, locations, rooms] = await Promise.all([
@@ -16,10 +15,12 @@ export default async function NewInventoryItemPage() {
     getAllRooms(),
   ]);
 
+  // Server action: mutate, revalidate, return result. NO redirect — the
+  // client-side NewItemForm wrapper handles navigation via router.back()
+  // so the user keeps their filters, scroll, and history.
   const handleCreate = async (data: CreateInventoryItemDTO) => {
     'use server';
-    await createInventoryItem(data);
-    redirect('/inventory');
+    return await createInventoryItem(data);
   };
 
   return (
@@ -43,11 +44,11 @@ export default async function NewInventoryItemPage() {
       </header>
 
       <main className="bg-card/50 backdrop-blur-sm rounded-xl border p-6 shadow-sm">
-        <ItemForm
+        <NewItemForm
           categories={categories}
           locations={locations}
           rooms={rooms}
-          onSubmit={handleCreate}
+          createAction={handleCreate}
         />
       </main>
     </div>

@@ -10,11 +10,23 @@ import { UserMenu } from './user-menu';
 import { MobileUserMenu } from './mobile-user-menu';
 
 const navItems = [
-  { href: '/inventory', label: 'Inventario', icon: Package },
-  { href: '/rooms', label: 'Ambientes', icon: Home },
-  { href: '/locations', label: 'Ubicaciones', icon: MapPin },
-  { href: '/categories', label: 'Categorías', icon: Tags },
+  { href: '/inventory', label: 'Inventario', icon: Package, exact: true },
+  { href: '/rooms', label: 'Ambientes', icon: Home, exact: false },
+  { href: '/locations', label: 'Ubicaciones', icon: MapPin, exact: false },
+  { href: '/categories', label: 'Categorías', icon: Tags, exact: false },
 ];
+
+/**
+ * Determine if a nav item is active for the current pathname.
+ * For the inventory item, only match the root `/inventory` and
+ * `/inventory?id=...` view (not the detail or edit pages), so the
+ * "Inventario" tab stays clean when the user is editing an item.
+ */
+function isNavActive(href: string, exact: boolean, pathname: string | null) {
+  if (!pathname) return false;
+  if (exact) return pathname === href;
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
 
 export function Navbar() {
   const pathname = usePathname();
@@ -29,20 +41,23 @@ export function Navbar() {
               <Home className="h-7 w-7 text-primary" />
             </Link>
             <nav className="flex items-center gap-6 ml-6 text-sm font-medium">
-              {navItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={cn(
-                    'transition-colors hover:text-primary',
-                    pathname?.startsWith(item.href)
-                      ? 'text-primary'
-                      : 'text-muted-foreground',
-                  )}
-                >
-                  {item.label}
-                </Link>
-              ))}
+              {navItems.map((item) => {
+                const active = isNavActive(item.href, item.exact, pathname);
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      'transition-colors hover:text-primary',
+                      active
+                        ? 'text-primary'
+                        : 'text-muted-foreground',
+                    )}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
             </nav>
           </div>
           <div className="flex items-center gap-2">
@@ -57,9 +72,7 @@ export function Navbar() {
         <div className="flex justify-around items-center h-16">
           {navItems.map((item) => {
             const Icon = item.icon;
-            const isActive =
-              pathname === item.href ||
-              (item.href !== '/' && pathname?.startsWith(item.href));
+            const isActive = isNavActive(item.href, item.exact, pathname);
 
             return (
               <Link

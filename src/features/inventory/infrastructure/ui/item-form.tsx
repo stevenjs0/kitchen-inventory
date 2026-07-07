@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { toast } from 'sonner';
 import {
   InventoryItem,
   CreateInventoryItemDTO,
@@ -52,8 +53,9 @@ interface ItemFormProps {
   categories: Category[];
   locations: Location[];
   rooms: Room[];
-  onSubmit: (data: CreateInventoryItemDTO) => Promise<void>;
+  onSubmit: (data: CreateInventoryItemDTO) => Promise<{ success: boolean; error?: string }>;
   onCancel?: () => void;
+  successMessage?: string;
 }
 
 const RequiredMarker = () => (
@@ -67,6 +69,7 @@ export function ItemForm({
   rooms,
   onSubmit,
   onCancel,
+  successMessage,
 }: ItemFormProps) {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<FieldError>({});
@@ -282,13 +285,21 @@ export function ItemForm({
 
     setLoading(true);
     try {
-      await onSubmit({
+      const result = await onSubmit({
         ...formData,
         location_id: selectedLocationId,
         stock_quantity: parseInt(formData.stock_quantity, 10),
         min_stock: parseInt(formData.min_stock, 10),
         notes: formData.notes || undefined,
       });
+      if (result.success) {
+        toast.success(successMessage ?? (item ? 'Item actualizado' : 'Item creado'));
+      } else {
+        toast.error(result.error ?? 'No se pudo guardar el item');
+      }
+    } catch (err) {
+      console.error('Submit failed:', err);
+      toast.error('Error inesperado al guardar');
     } finally {
       setLoading(false);
     }

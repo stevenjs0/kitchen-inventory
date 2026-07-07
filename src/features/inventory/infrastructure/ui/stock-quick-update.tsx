@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { updateStock as updateStockAction } from "@/lib/actions/inventory.actions";
 import { Button } from "@/components/ui/button";
 import { Minus, Plus, Loader2 } from "lucide-react";
@@ -15,16 +16,27 @@ export function StockQuickUpdate({ itemId, currentStock }: StockQuickUpdateProps
   const [pending, setPending] = useState(false);
 
   const handleUpdate = async (delta: number) => {
-    setPending(true);
+    const previousStock = stock;
+    const newStock = previousStock + delta;
+    if (newStock < 0) return;
 
-    const newStock = stock + delta;
+    setPending(true);
     setStock(newStock);
 
     try {
-      await updateStockAction(itemId, delta);
+      const result = await updateStockAction(itemId, delta);
+      if (result.success) {
+        toast.success(
+          delta > 0 ? 'Stock incrementado' : 'Stock decrementado',
+        );
+      } else {
+        setStock(previousStock);
+        toast.error(result.error || 'No se pudo actualizar el stock');
+      }
     } catch (error) {
-      setStock(stock - delta);
+      setStock(previousStock);
       console.error("Failed to update stock:", error);
+      toast.error('Error inesperado al actualizar el stock');
     } finally {
       setPending(false);
     }
@@ -33,6 +45,7 @@ export function StockQuickUpdate({ itemId, currentStock }: StockQuickUpdateProps
   return (
     <div className="flex items-center bg-muted/30 rounded-full p-1 border shadow-inner">
       <Button
+        type="button"
         variant="ghost"
         size="icon"
         onClick={() => handleUpdate(-1)}
@@ -53,6 +66,7 @@ export function StockQuickUpdate({ itemId, currentStock }: StockQuickUpdateProps
       </div>
 
       <Button
+        type="button"
         variant="ghost"
         size="icon"
         onClick={() => handleUpdate(1)}

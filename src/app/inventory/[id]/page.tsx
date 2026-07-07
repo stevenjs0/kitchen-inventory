@@ -3,19 +3,19 @@ import { getAllCategories } from "@/lib/actions/categories.actions";
 import { getLocationsTree } from "@/lib/actions/locations.actions";
 import { getAllRooms } from "@/lib/actions/rooms.actions";
 import { CreateInventoryItemDTO } from "@/features/inventory/domain/entities";
-import { ItemForm } from "@/features/inventory/infrastructure/ui/item-form";
+import { EditItemForm } from "@/features/inventory/infrastructure/ui/edit-item-form";
 import { DeleteItemButton } from "@/features/inventory/infrastructure/ui/delete-item-button";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatStockStatus } from "@/shared/utils/formatters";
-import { ChevronLeft, Edit3, MapPin, Tag, Calendar, AlertCircle } from "lucide-react";
+import { Edit3, MapPin, Tag, Calendar, AlertCircle } from "lucide-react";
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
+import { notFound } from "next/navigation";
+import { BackButton } from "@/shared/ui/back-button";
 
 type PageProps = {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ edit?: string }>;
+  searchParams: Promise<{ edit?: string; from?: string }>;
 };
 
 export default async function ItemPage({
@@ -23,7 +23,7 @@ export default async function ItemPage({
   searchParams,
 }: PageProps) {
   const { id } = await params;
-  const { edit } = await searchParams;
+  const { edit, from } = await searchParams;
   const isEditing = edit === "true";
 
   const [item, categories, locations, rooms] = await Promise.all([
@@ -37,11 +37,12 @@ export default async function ItemPage({
     notFound();
   }
 
+  // Server action: mutate, revalidate, return result. NO redirect — the
+  // client-side EditItemForm wrapper handles navigation via router.back()
+  // so the user keeps their filters, scroll, and history.
   const handleUpdate = async (data: CreateInventoryItemDTO) => {
     "use server";
-    await updateInventoryItem(id, data);
-    revalidatePath(`/inventory/${id}`);
-    redirect(`/inventory/${id}`);
+    return await updateInventoryItem(id, data);
   };
 
   const stockInfo = formatStockStatus(item.stock_quantity, item.min_stock);
@@ -54,24 +55,20 @@ export default async function ItemPage({
     return (
       <div className="container mx-auto p-4 space-y-8 pb-24 md:pb-8 max-w-2xl">
         <header className="flex items-center gap-4">
-          <Link href={`/inventory/${id}`}>
-            <Button variant="ghost" size="icon" className="rounded-full h-10 w-10">
-              <ChevronLeft className="h-6 w-6" />
-            </Button>
-          </Link>
+          <BackButton fallbackHref={`/inventory/${id}`} />
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Editar Item</h1>
             <p className="text-sm text-muted-foreground">{item.name}</p>
           </div>
         </header>
         <main className="bg-card/50 backdrop-blur-sm rounded-3xl border p-6 shadow-sm">
-        <ItemForm
-          item={item}
-          categories={categories}
-          locations={locations}
-          rooms={rooms}
-          onSubmit={handleUpdate}
-        />
+          <EditItemForm
+            item={item}
+            categories={categories}
+            locations={locations}
+            rooms={rooms}
+            updateAction={handleUpdate}
+          />
         </main>
       </div>
     );
@@ -81,11 +78,7 @@ export default async function ItemPage({
     <div className="container mx-auto p-4 space-y-8 pb-24 md:pb-8 max-w-2xl">
       <header className="flex justify-between items-start">
         <div className="flex items-center gap-4">
-          <Link href="/inventory">
-            <Button variant="ghost" size="icon" className="rounded-full h-10 w-10">
-              <ChevronLeft className="h-6 w-6" />
-            </Button>
-          </Link>
+          <BackButton fallbackHref="/inventory" />
           <div>
             <h1 className="text-3xl font-bold tracking-tight">{item.name}</h1>
             <div className="flex items-center gap-2 mt-1">

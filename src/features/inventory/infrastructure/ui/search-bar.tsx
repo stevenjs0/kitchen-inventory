@@ -11,31 +11,62 @@ import { Button } from '@/components/ui/button';
 
 interface SearchBarProps {
   onResultSelect?: (item: InventoryItem) => void;
+  /**
+   * Controlled value for the search input — used to keep the input in sync
+   * with the URL-backed filter state.
+   */
+  externalQuery?: string;
+  /**
+   * Fired when the user types in the input. The host (InventoryContainer)
+   * is responsible for persisting the query to the URL.
+   */
+  onQueryChange?: (q: string) => void;
 }
 
-export function SearchBar({ onResultSelect }: SearchBarProps) {
-  const [query, setQuery] = useState('');
+export function SearchBar({
+  onResultSelect,
+  externalQuery,
+  onQueryChange,
+}: SearchBarProps) {
+  const isControlled = externalQuery !== undefined;
+  const [internalQuery, setInternalQuery] = useState('');
+  const query = isControlled ? externalQuery : internalQuery;
+
   const [results, setResults] = useState<InventoryItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const search = useCallback(async (searchQuery: string) => {
-    if (!searchQuery || searchQuery.trim().length < 2) {
-      setResults([]);
-      return;
-    }
+  const setQuery = useCallback(
+    (next: string) => {
+      if (isControlled) {
+        onQueryChange?.(next);
+      } else {
+        setInternalQuery(next);
+      }
+    },
+    [isControlled, onQueryChange],
+  );
 
-    setLoading(true);
-    try {
-      const items = await searchInventoryItems(searchQuery);
-      setResults(items);
-      setIsOpen(true);
-    } catch (error) {
-      console.error('Search error:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const search = useCallback(
+    async (searchQuery: string) => {
+      if (!searchQuery || searchQuery.trim().length < 2) {
+        setResults([]);
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const items = await searchInventoryItems(searchQuery);
+        setResults(items);
+        setIsOpen(true);
+      } catch (error) {
+        console.error('Search error:', error);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [],
+  );
 
   useEffect(() => {
     const debounce = setTimeout(() => {
@@ -46,7 +77,7 @@ export function SearchBar({ onResultSelect }: SearchBarProps) {
   }, [query, search]);
 
   const handleSelect = (item: InventoryItem) => {
-    setQuery('');
+    setQuery(item.name);
     setResults([]);
     setIsOpen(false);
     onResultSelect?.(item);
@@ -63,8 +94,12 @@ export function SearchBar({ onResultSelect }: SearchBarProps) {
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
         <Input
-          type="text"
+          type="search"
+          inputMode="search"
+          enterKeyHint="search"
+          autoComplete="off"
           placeholder="Buscar suministros..."
+          aria-label="Buscar suministros"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => query.length >= 2 && setIsOpen(true)}
@@ -72,6 +107,7 @@ export function SearchBar({ onResultSelect }: SearchBarProps) {
         />
         {query && !loading && (
           <Button
+            type="button"
             variant="ghost"
             size="sm"
             onClick={handleClearSearch}
@@ -122,6 +158,7 @@ export function SearchBar({ onResultSelect }: SearchBarProps) {
                 return (
                   <li key={item.id}>
                     <button
+                      type="button"
                       onClick={() => handleSelect(item)}
                       className="w-full p-3 text-left hover:bg-accent/50 rounded-lg transition-colors group/item"
                     >

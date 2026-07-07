@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { deleteInventoryItem } from '@/lib/actions/inventory.actions';
 import { Button } from '@/components/ui/button';
 import {
@@ -27,6 +28,14 @@ export function DeleteItemButton({ itemId, itemName }: DeleteItemButtonProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const router = useRouter();
 
+  const goBack = () => {
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      router.back();
+    } else {
+      router.push('/inventory');
+    }
+  };
+
   const handleDelete = async () => {
     setIsDeleting(true);
     const result = await deleteInventoryItem(itemId);
@@ -34,7 +43,10 @@ export function DeleteItemButton({ itemId, itemName }: DeleteItemButtonProps) {
 
     if (result.success) {
       setOpen(false);
-      router.push('/inventory');
+      toast.success('Item eliminado');
+      goBack();
+    } else {
+      toast.error(result.error || 'No se pudo eliminar el item');
     }
   };
 

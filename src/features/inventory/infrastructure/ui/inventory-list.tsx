@@ -5,13 +5,14 @@ import { StockQuickUpdate } from './stock-quick-update';
 import { formatStockStatus } from '@/shared/utils/formatters';
 import { Button } from '@/components/ui/button';
 import {
-    Card,
-    CardContent,
-    CardFooter,
-    CardHeader,
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { MapPin, ChevronRight, Edit3, Eye, Tag } from 'lucide-react';
 
 interface InventoryListProps {
@@ -19,6 +20,13 @@ interface InventoryListProps {
 }
 
 export function InventoryList({ items }: InventoryListProps) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const currentSearch = searchParams.toString();
+  const fromParam = currentSearch
+    ? `&from=${encodeURIComponent(`${pathname}?${currentSearch}`)}`
+    : '';
+
   if (items.length === 0) {
     return (
       <div className="text-center py-12 border-2 border-dashed rounded-xl text-muted-foreground">
@@ -61,38 +69,38 @@ export function InventoryList({ items }: InventoryListProps) {
             }}
           >
             <CardHeader className="p-4 pb-2 flex flex-row items-start gap-3">
-            <div className="space-y-1 flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <h3 className="font-semibold text-base leading-tight truncate">
-                  {item.name}
-                </h3>
-                <Badge
-                  variant={badgeVariant}
-                  className="text-[10px] px-1.5 py-0 h-4 uppercase tracking-tighter shrink-0"
-                >
-                  {stockInfo.label}
-                </Badge>
-              </div>
-              {item.category && (
-                <div className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider">
-                  <Tag
-                    className="h-3 w-3 shrink-0"
-                    style={{ color: item.category.color || '#6B7280' }}
-                  />
-                  <span
-                    className="truncate"
-                    style={{ color: item.category.color || '#6B7280' }}
+              <div className="space-y-1 flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <h3 className="font-semibold text-base leading-tight truncate">
+                    {item.name}
+                  </h3>
+                  <Badge
+                    variant={badgeVariant}
+                    className="text-[10px] px-1.5 py-0 h-4 uppercase tracking-tighter shrink-0"
                   >
-                    {item.category.name}
-                  </span>
+                    {stockInfo.label}
+                  </Badge>
                 </div>
-              )}
-            </div>
-            <StockQuickUpdate
-              itemId={item.id}
-              currentStock={item.stock_quantity}
-            />
-          </CardHeader>
+                {item.category && (
+                  <div className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider">
+                    <Tag
+                      className="h-3 w-3 shrink-0"
+                      style={{ color: item.category.color || '#6B7280' }}
+                    />
+                    <span
+                      className="truncate"
+                      style={{ color: item.category.color || '#6B7280' }}
+                    >
+                      {item.category.name}
+                    </span>
+                  </div>
+                )}
+              </div>
+              <StockQuickUpdate
+                itemId={item.id}
+                currentStock={item.stock_quantity}
+              />
+            </CardHeader>
 
             <CardContent className="p-4 pt-0 pb-3 space-y-1">
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -102,15 +110,18 @@ export function InventoryList({ items }: InventoryListProps) {
               {(item.updated_by || item.updated_at) && (
                 <div className="flex items-center gap-1 text-[10px] text-muted-foreground/60">
                   <span>
-                    Actualizado{item.updated_by ? ` por ${item.updated_by}` : ''}
-                    {item.updated_at ? ` • ${new Date(item.updated_at).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })}` : ''}
+                    Actualizado
+                    {item.updated_by ? ` por ${item.updated_by}` : ''}
+                    {item.updated_at
+                      ? ` • ${new Date(item.updated_at).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })}`
+                      : ''}
                   </span>
                 </div>
               )}
             </CardContent>
 
             <CardFooter className="p-4 pt-0 flex justify-end gap-2">
-              <Link href={`/inventory/${item.id}?edit=true`}>
+              <Link href={`/inventory/${item.id}?edit=true${fromParam}`}>
                 <Button
                   variant="ghost"
                   size="sm"
