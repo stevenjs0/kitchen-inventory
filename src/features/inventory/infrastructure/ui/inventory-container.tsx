@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { InventoryItem } from '@/features/inventory/domain/entities';
@@ -57,9 +57,27 @@ export function InventoryContainer({
     activeFiltersCount,
   } = useFiltersFromUrl();
 
+  const [stockOverrides, setStockOverrides] = useState<
+    Map<string, InventoryItem>
+  >(() => new Map());
+
+  const handleStockCommitted = useCallback((updated: InventoryItem) => {
+    setStockOverrides((prev) => {
+      const next = new Map(prev);
+      next.set(updated.id, updated);
+      return next;
+    });
+  }, []);
+
+  const items = useMemo(
+    () =>
+      initialItems.map((item) => stockOverrides.get(item.id) ?? item),
+    [initialItems, stockOverrides],
+  );
+
   const filteredItems = useMemo(() => {
     const q = filters.q.toLowerCase();
-    return initialItems.filter((item) => {
+    return items.filter((item) => {
       const matchesSearch =
         q === '' ||
         item.name.toLowerCase().includes(q) ||
@@ -97,7 +115,7 @@ export function InventoryContainer({
       return matchesSearch && matchesCategory && matchesRoom && matchesStock;
     });
   }, [
-    initialItems,
+    items,
     filters.q,
     filters.categories,
     filters.room,
@@ -413,7 +431,10 @@ export function InventoryContainer({
             </Button>
           </div>
         ) : (
-          <InventoryList items={filteredItems} />
+          <InventoryList
+            items={filteredItems}
+            onStockCommitted={handleStockCommitted}
+          />
         )}
       </main>
     </div>

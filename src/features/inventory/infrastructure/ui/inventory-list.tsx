@@ -17,9 +17,10 @@ import { MapPin, ChevronRight, Edit3, Eye, Tag } from 'lucide-react';
 
 interface InventoryListProps {
   items: InventoryItem[];
+  onStockCommitted?: (item: InventoryItem) => void;
 }
 
-export function InventoryList({ items }: InventoryListProps) {
+export function InventoryList({ items, onStockCommitted }: InventoryListProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const currentSearch = searchParams.toString();
@@ -99,6 +100,7 @@ export function InventoryList({ items }: InventoryListProps) {
               <StockQuickUpdate
                 itemId={item.id}
                 currentStock={item.stock_quantity}
+                onStockCommitted={onStockCommitted}
               />
             </CardHeader>
 
