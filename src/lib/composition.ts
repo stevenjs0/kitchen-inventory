@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { requireUser } from "@/lib/auth";
 import { InventoryService } from "@/features/inventory/application/services/inventory.service";
 import { CategoriesService } from "@/features/categories/application/services/categories.service";
 import { LocationsService } from "@/features/locations/application/services/locations.service";
@@ -9,11 +10,13 @@ import { SupabaseLocationRepository } from "@/features/locations/infrastructure/
 import { SupabaseRoomRepository } from "@/features/rooms/infrastructure/repositories/supabase-rooms.repository";
 
 async function getUserName() {
-  const client = await createClient();
-  const {
-    data: { user },
-  } = await client.auth.getUser();
-  return user?.user_metadata?.full_name || user?.email || undefined;
+  const user = await requireUser();
+  return (
+    user.user_metadata?.full_name ||
+    user.user_metadata?.name ||
+    user.email ||
+    undefined
+  );
 }
 
 export async function getInventoryService() {
