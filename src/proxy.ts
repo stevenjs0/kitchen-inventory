@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { createMiddlewareClient } from '@/lib/supabase/middleware'
 
-const protectedRoutes = ['/inventory', '/locations', '/categories', '/rooms']
+const protectedRoutes = ['/inventory', '/dashboard', '/locations', '/categories', '/rooms']
 const authRoutes = ['/login']
 
 export async function proxy(request: NextRequest) {

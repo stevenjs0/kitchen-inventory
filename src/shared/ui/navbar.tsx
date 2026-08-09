@@ -3,13 +3,14 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { Package, MapPin, Tags, Home } from 'lucide-react';
+import { ChartPie, Package, MapPin, Tags, Home } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { AuthProvider } from '@/lib/auth-context';
 import { UserMenu } from './user-menu';
 import { MobileUserMenu } from './mobile-user-menu';
 
 const navItems = [
+  { href: '/dashboard', label: 'Resumen', icon: ChartPie, exact: true },
   { href: '/inventory', label: 'Inventario', icon: Package, exact: true },
   { href: '/rooms', label: 'Ambientes', icon: Home, exact: false },
   { href: '/locations', label: 'Ubicaciones', icon: MapPin, exact: false },
