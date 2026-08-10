@@ -154,7 +154,8 @@ export function DashboardContainer({
                   tickLine={false}
                   axisLine={false}
                   tick={{ fontSize: 12 }}
-                  interval={0}
+                  interval="preserveStartEnd"
+                  minTickGap={24}
                 />
                 <ChartTooltip
                   cursor={false}
