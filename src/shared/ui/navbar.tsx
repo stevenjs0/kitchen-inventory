@@ -68,6 +68,19 @@ export function Navbar() {
         </div>
       </header>
 
+      {/* Mobile Header */}
+      <header className="md:hidden sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
+        <div className="flex h-14 items-center justify-between px-4">
+          <Link href="/" className="flex items-center">
+            <Home className="h-7 w-7 text-primary" />
+          </Link>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <MobileUserMenu />
+          </div>
+        </div>
+      </header>
+
       {/* Mobile Bottom Nav */}
       <nav className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-md border-t md:hidden z-50">
         <div className="flex justify-around items-center h-16">
@@ -79,8 +92,10 @@ export function Navbar() {
               <Link
                 key={item.href}
                 href={item.href}
+                aria-label={item.label}
+                title={item.label}
                 className={cn(
-                  'flex flex-col items-center justify-center w-full h-full transition-all duration-200',
+                  'flex items-center justify-center w-full h-full transition-all duration-200',
                   isActive
                     ? 'text-primary'
                     : 'text-muted-foreground hover:text-foreground',
@@ -88,27 +103,15 @@ export function Navbar() {
               >
                 <div
                   className={cn(
-                    'p-1 rounded-md transition-colors',
+                    'p-1.5 rounded-md transition-colors',
                     isActive && 'bg-primary/5',
                   )}
                 >
-                  <Icon size={20} strokeWidth={isActive ? 2 : 1.5} />
+                  <Icon size={22} strokeWidth={isActive ? 2 : 1.5} />
                 </div>
-                <span
-                  className={cn(
-                    'text-[10px] font-medium mt-1 uppercase tracking-wider',
-                    isActive ? 'opacity-100' : 'opacity-70',
-                  )}
-                >
-                  {item.label}
-                </span>
               </Link>
             );
           })}
-          <div className="flex items-center gap-2 px-2">
-            <ThemeToggle />
-            <MobileUserMenu />
-          </div>
         </div>
       </nav>
     </AuthProvider>

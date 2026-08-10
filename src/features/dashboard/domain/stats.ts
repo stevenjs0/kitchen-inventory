@@ -17,6 +17,14 @@ export interface StockByRoom {
   itemCount: number;
 }
 
+export interface StockByLocation {
+  locationId: string;
+  name: string;
+  color: string;
+  total: number;
+  itemCount: number;
+}
+
 export interface StockStatus {
   status: 'normal' | 'low' | 'out';
   count: number;
@@ -65,6 +73,33 @@ export function aggregateStockByRoom(
         roomId: room.id,
         name: room.name,
         color: room.color ?? '#6B7280',
+        total: item.stock_quantity,
+        itemCount: 1,
+      });
+    }
+  }
+  return [...acc.values()].sort((a, b) => b.total - a.total);
+}
+
+export function aggregateStockByLocation(
+  items: InventoryItem[],
+  rooms: Room[],
+): StockByLocation[] {
+  const roomById = new Map(rooms.map((room) => [room.id, room]));
+  const acc = new Map<string, StockByLocation>();
+  for (const item of items) {
+    const loc = item.location;
+    if (!loc) continue;
+    const existing = acc.get(loc.id);
+    if (existing) {
+      existing.total += item.stock_quantity;
+      existing.itemCount += 1;
+    } else {
+      const room = loc.room_id ? roomById.get(loc.room_id) : undefined;
+      acc.set(loc.id, {
+        locationId: loc.id,
+        name: loc.name,
+        color: room?.color ?? '#6B7280',
         total: item.stock_quantity,
         itemCount: 1,
       });

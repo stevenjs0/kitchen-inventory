@@ -70,7 +70,7 @@ export function MobileUserMenu() {
         )}
       </button>
       {open && (
-        <div className="absolute right-0 bottom-full mb-2 z-60 w-56 rounded-lg bg-popover p-1 text-popover-foreground shadow-md ring-1 ring-foreground/10">
+        <div className="absolute right-0 top-full mt-2 z-60 w-56 rounded-lg bg-popover p-1 text-popover-foreground shadow-md ring-1 ring-foreground/10">
           <div className="px-1.5 py-1">
             <p className="text-sm font-medium leading-none">{name}</p>
             {user.email && (

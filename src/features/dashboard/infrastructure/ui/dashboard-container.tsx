@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/chart';
 import {
   aggregateStockByCategory,
+  aggregateStockByLocation,
   aggregateStockByRoom,
   aggregateStockStatus,
 } from '../../domain/stats';
@@ -36,6 +37,10 @@ export function DashboardContainer({
   const byCategory = useMemo(() => aggregateStockByCategory(items), [items]);
   const byRoom = useMemo(
     () => aggregateStockByRoom(items, rooms),
+    [items, rooms],
+  );
+  const byLocation = useMemo(
+    () => aggregateStockByLocation(items, rooms),
     [items, rooms],
   );
   const status = useMemo(() => aggregateStockStatus(items), [items]);
@@ -133,44 +138,85 @@ export function DashboardContainer({
         </Card>
       </div>
 
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle className="text-lg">Stock por ambiente</CardTitle>
-          <CardDescription>
-            Cantidad total de stock agrupada por ambiente
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {byRoom.length === 0 ? (
-            <EmptyState />
-          ) : (
-            <ChartContainer config={{}} className="h-[320px]">
-              <BarChart
-                data={byRoom}
-                margin={{ top: 10, left: 0, right: 0, bottom: 0 }}
-              >
-                <XAxis
-                  dataKey="name"
-                  tickLine={false}
-                  axisLine={false}
-                  tick={{ fontSize: 12 }}
-                  interval="preserveStartEnd"
-                  minTickGap={24}
-                />
-                <ChartTooltip
-                  cursor={false}
-                  content={<ChartTooltipContent />}
-                />
-                <Bar dataKey="total" radius={6} name="Stock">
-                  {byRoom.map((entry) => (
-                    <Cell key={entry.roomId} fill={entry.color} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ChartContainer>
-          )}
-        </CardContent>
-      </Card>
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Stock por ambiente</CardTitle>
+            <CardDescription>
+              Cantidad total de stock agrupada por ambiente
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {byRoom.length === 0 ? (
+              <EmptyState />
+            ) : (
+              <ChartContainer config={{}} className="h-[320px]">
+                <BarChart
+                  data={byRoom}
+                  margin={{ top: 10, left: 0, right: 0, bottom: 0 }}
+                >
+                  <XAxis
+                    dataKey="name"
+                    tickLine={false}
+                    axisLine={false}
+                    tick={{ fontSize: 12 }}
+                    interval="preserveStartEnd"
+                    minTickGap={24}
+                  />
+                  <ChartTooltip
+                    cursor={false}
+                    content={<ChartTooltipContent />}
+                  />
+                  <Bar dataKey="total" radius={6} name="Stock">
+                    {byRoom.map((entry) => (
+                      <Cell key={entry.roomId} fill={entry.color} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ChartContainer>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Stock por ubicación</CardTitle>
+            <CardDescription>
+              Cantidad total de stock agrupada por ubicación
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {byLocation.length === 0 ? (
+              <EmptyState />
+            ) : (
+              <ChartContainer config={{}} className="h-[320px]">
+                <BarChart
+                  data={byLocation}
+                  margin={{ top: 10, left: 0, right: 0, bottom: 0 }}
+                >
+                  <XAxis
+                    dataKey="name"
+                    tickLine={false}
+                    axisLine={false}
+                    tick={{ fontSize: 12 }}
+                    interval="preserveStartEnd"
+                    minTickGap={24}
+                  />
+                  <ChartTooltip
+                    cursor={false}
+                    content={<ChartTooltipContent />}
+                  />
+                  <Bar dataKey="total" radius={6} name="Stock">
+                    {byLocation.map((entry) => (
+                      <Cell key={entry.locationId} fill={entry.color} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ChartContainer>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

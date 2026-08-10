@@ -18,10 +18,14 @@ export default function DashboardLoading() {
         ))}
       </div>
 
-      <div className="bg-card/50 rounded-xl border p-4 space-y-4">
-        <Skeleton className="h-5 w-1/2" />
-        <Skeleton className="h-4 w-2/3" />
-        <Skeleton className="h-[280px] w-full rounded-lg" />
+      <div className="grid gap-4 md:grid-cols-2">
+        {Array.from({ length: 2 }).map((_, i) => (
+          <div key={i} className="bg-card/50 rounded-xl border p-4 space-y-4">
+            <Skeleton className="h-5 w-1/2" />
+            <Skeleton className="h-4 w-2/3" />
+            <Skeleton className="h-[280px] w-full rounded-lg" />
+          </div>
+        ))}
       </div>
     </div>
   );
