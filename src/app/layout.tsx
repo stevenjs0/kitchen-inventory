@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import { Toaster } from '@/components/ui/sonner';
 import { ThemeProvider } from './client-theme-provider';
 import { Navbar } from '@/shared/ui/navbar';
+import { SearchShortcutProvider } from '@/components/providers/search-shortcut-provider';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -33,8 +34,10 @@ export default async function RootLayout({
         suppressHydrationWarning
       >
         <ThemeProvider>
-          <Navbar />
-          <main className="flex-1 pb-20 md:pb-8">{children}</main>
+          <SearchShortcutProvider>
+            <Navbar />
+            <main className="flex-1 pb-20 md:pb-8">{children}</main>
+          </SearchShortcutProvider>
           <Toaster />
         </ThemeProvider>
       </body>

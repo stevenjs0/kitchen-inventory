@@ -105,18 +105,6 @@ export function SearchBar({
           onFocus={() => query.length >= 2 && setIsOpen(true)}
           className="pl-10 pr-10 h-11 bg-muted/50 border-none focus-visible:ring-1 focus-visible:ring-primary rounded-xl transition-all"
         />
-        {query && !loading && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={handleClearSearch}
-            className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 p-0 hover:bg-muted"
-            aria-label="Limpiar búsqueda"
-          >
-            <X className="h-4 w-4 text-muted-foreground hover:text-foreground transition-colors" />
-          </Button>
-        )}
         {loading && (
           <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground animate-spin" />
         )}
