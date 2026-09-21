@@ -102,7 +102,7 @@ export function LocationForm({ rooms, locationId, locationName }: LocationFormPr
             </div>
             {locationId && (
               <AlertDialog>
-                <AlertDialogTrigger asChild>
+                <AlertDialogTrigger>
                   <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-destructive">
                     <Trash2 className="h-4 w-4" />
                   </Button>
