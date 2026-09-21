@@ -1,13 +1,12 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { searchInventoryItems } from '@/lib/actions/inventory.actions';
 import { InventoryItem } from '@/features/inventory/domain/entities';
 import { formatStockStatus } from '@/shared/utils/formatters';
-import { Search, Loader2, X } from 'lucide-react';
+import { Search, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 
 interface SearchBarProps {
   onResultSelect?: (item: InventoryItem) => void;
@@ -32,6 +31,8 @@ export function SearchBar({
   const [internalQuery, setInternalQuery] = useState('');
   const query = isControlled ? externalQuery : internalQuery;
 
+  const inputRef = useRef<HTMLInputElement>(null);
+
   const [results, setResults] = useState<InventoryItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -47,33 +48,41 @@ export function SearchBar({
     [isControlled, onQueryChange],
   );
 
-  const search = useCallback(
-    async (searchQuery: string) => {
-      if (!searchQuery || searchQuery.trim().length < 2) {
-        setResults([]);
-        return;
-      }
+  const search = useCallback(async (searchQuery: string) => {
+    if (!searchQuery || searchQuery.trim().length < 2) {
+      setResults([]);
+      return;
+    }
 
-      setLoading(true);
-      try {
-        const items = await searchInventoryItems(searchQuery);
-        setResults(items);
-        setIsOpen(true);
-      } catch (error) {
-        console.error('Search error:', error);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [],
-  );
+    setLoading(true);
+    try {
+      const items = await searchInventoryItems(searchQuery);
+      setResults(items);
+      setIsOpen(true);
+    } catch (error) {
+      console.error('Search error:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     const debounce = setTimeout(() => {
       search(query);
     }, 300);
 
-    return () => clearTimeout(debounce);
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        inputRef.current?.focus();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      clearTimeout(debounce);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, [query, search]);
 
   const handleSelect = (item: InventoryItem) => {
@@ -83,17 +92,12 @@ export function SearchBar({
     onResultSelect?.(item);
   };
 
-  const handleClearSearch = () => {
-    setQuery('');
-    setResults([]);
-    setIsOpen(false);
-  };
-
   return (
-    <div className="relative group">
+    <div className="relative group md:col-span-1 col-span-2">
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
         <Input
+          ref={inputRef}
           type="search"
           inputMode="search"
           enterKeyHint="search"
@@ -103,20 +107,8 @@ export function SearchBar({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => query.length >= 2 && setIsOpen(true)}
-          className="pl-10 pr-10 h-11 bg-muted/50 border-none focus-visible:ring-1 focus-visible:ring-primary rounded-xl transition-all"
+          className="pl-10 pr-10 h-11 bg-muted/50 border-none focus-visible:ring-1 focus-visible:ring-primary rounded-xl transition-all w-full"
         />
-        {query && !loading && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={handleClearSearch}
-            className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 p-0 hover:bg-muted"
-            aria-label="Limpiar búsqueda"
-          >
-            <X className="h-4 w-4 text-muted-foreground hover:text-foreground transition-colors" />
-          </Button>
-        )}
         {loading && (
           <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground animate-spin" />
         )}
