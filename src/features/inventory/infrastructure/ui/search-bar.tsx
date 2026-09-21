@@ -5,9 +5,8 @@ import { Input } from '@/components/ui/input';
 import { searchInventoryItems } from '@/lib/actions/inventory.actions';
 import { InventoryItem } from '@/features/inventory/domain/entities';
 import { formatStockStatus } from '@/shared/utils/formatters';
-import { Search, Loader2, X } from 'lucide-react';
+import { Search, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 
 interface SearchBarProps {
   onResultSelect?: (item: InventoryItem) => void;
@@ -49,26 +48,23 @@ export function SearchBar({
     [isControlled, onQueryChange],
   );
 
-  const search = useCallback(
-    async (searchQuery: string) => {
-      if (!searchQuery || searchQuery.trim().length < 2) {
-        setResults([]);
-        return;
-      }
+  const search = useCallback(async (searchQuery: string) => {
+    if (!searchQuery || searchQuery.trim().length < 2) {
+      setResults([]);
+      return;
+    }
 
-      setLoading(true);
-      try {
-        const items = await searchInventoryItems(searchQuery);
-        setResults(items);
-        setIsOpen(true);
-      } catch (error) {
-        console.error('Search error:', error);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [],
-  );
+    setLoading(true);
+    try {
+      const items = await searchInventoryItems(searchQuery);
+      setResults(items);
+      setIsOpen(true);
+    } catch (error) {
+      console.error('Search error:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     const debounce = setTimeout(() => {
@@ -96,14 +92,8 @@ export function SearchBar({
     onResultSelect?.(item);
   };
 
-  const handleClearSearch = () => {
-    setQuery('');
-    setResults([]);
-    setIsOpen(false);
-  };
-
   return (
-    <div className="relative group">
+    <div className="relative group md:col-span-1 col-span-2">
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
         <Input

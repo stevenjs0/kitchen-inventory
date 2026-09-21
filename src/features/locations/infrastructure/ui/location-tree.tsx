@@ -93,16 +93,14 @@ export function LocationTree({
                 </button>
                 <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
                   <AlertDialog onOpenChange={(open) => !open && setDeletingId(null)}>
-                    <AlertDialogTrigger>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setDeletingId(location.id);
-                        }}
-                        className="p-2 bg-background border rounded-lg text-muted-foreground hover:text-destructive hover:border-destructive transition-colors"
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </button>
+                    <AlertDialogTrigger
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeletingId(location.id);
+                      }}
+                      className="p-2 bg-background border rounded-lg text-muted-foreground hover:text-destructive hover:border-destructive transition-colors"
+                    >
+                      <Trash2 className="h-3 w-3" />
                     </AlertDialogTrigger>
                     <AlertDialogContent size="sm">
                       <AlertDialogHeader>

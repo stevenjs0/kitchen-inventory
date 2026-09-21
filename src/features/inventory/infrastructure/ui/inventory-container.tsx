@@ -70,8 +70,7 @@ export function InventoryContainer({
   }, []);
 
   const items = useMemo(
-    () =>
-      initialItems.map((item) => stockOverrides.get(item.id) ?? item),
+    () => initialItems.map((item) => stockOverrides.get(item.id) ?? item),
     [initialItems, stockOverrides],
   );
 
@@ -114,25 +113,17 @@ export function InventoryContainer({
 
       return matchesSearch && matchesCategory && matchesRoom && matchesStock;
     });
-  }, [
-    items,
-    filters.q,
-    filters.categories,
-    filters.room,
-    filters.stock,
-  ]);
+  }, [items, filters.q, filters.categories, filters.room, filters.stock]);
 
   return (
     <div className="space-y-6">
       <div className="sticky top-0 bg-background/95 backdrop-blur z-10 py-4 -mx-4 px-4 border-b md:border-none space-y-4">
-        <div className="flex gap-2 items-center">
-          <div className="flex-1">
-            <SearchBar
-              onResultSelect={(item) => setQuery(item.name)}
-              externalQuery={filters.q}
-              onQueryChange={setQuery}
-            />
-          </div>
+        <div className="grid flex-1 gap-2 items-center md:grid-cols-[1fr_auto_auto_auto_auto] grid-cols-3">
+          <SearchBar
+            onResultSelect={(item) => setQuery(item.name)}
+            externalQuery={filters.q}
+            onQueryChange={setQuery}
+          />
 
           <DropdownMenu>
             <DropdownMenuTrigger
