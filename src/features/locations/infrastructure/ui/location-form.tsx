@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createLocation } from "@/lib/actions/locations.actions";
+import { createLocation, deleteLocation } from "@/lib/actions/locations.actions";
 import { Room } from "@/features/rooms/domain/entities";
 import { RoomSelect } from "@/features/rooms/infrastructure/ui/room-select";
 import { Button } from "@/components/ui/button";
@@ -10,16 +10,30 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Loader2, ChevronLeft, Save } from "lucide-react";
+import { Loader2, ChevronLeft, Save, Trash2 } from "lucide-react";
 import Link from "next/link";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface LocationFormProps {
   rooms: Room[];
+  locationId?: string;
+  locationName?: string;
 }
 
-export function LocationForm({ rooms }: LocationFormProps) {
+export function LocationForm({ rooms, locationId, locationName }: LocationFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [formData, setFormData] = useState({
     section: "",
     side: "",
@@ -33,9 +47,6 @@ export function LocationForm({ rooms }: LocationFormProps) {
     setLoading(true);
 
     try {
-      // The requirement says: Section → Lado → Posición → Nivel
-      // We send name as the leaf node or a combination?
-      // According to actions.ts, it expects: name, section, side, position, level
     const result = await createLocation({
       ...formData,
       side: formData.side || undefined,
@@ -56,17 +67,66 @@ export function LocationForm({ rooms }: LocationFormProps) {
     }
   };
 
+  const handleDelete = async () => {
+    if (!locationId) return;
+    setDeleting(true);
+    try {
+      const result = await deleteLocation(locationId);
+      if (result.success) {
+        toast.success("Ubicación eliminada correctamente");
+        router.push("/locations");
+      } else {
+        toast.error(result.error || "Error al eliminar la ubicación");
+      }
+    } catch {
+      toast.error("Error inesperado al eliminar la ubicación");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   return (
     <Card className="border-none shadow-none bg-transparent">
       <form onSubmit={handleSubmit}>
         <CardHeader className="px-0 pt-0">
-          <div className="flex items-center gap-2 mb-2">
-            <Link href="/locations">
-              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-            </Link>
-            <CardTitle className="text-xl font-bold">Nueva Ubicación</CardTitle>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <Link href="/locations">
+                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+              </Link>
+              <CardTitle className="text-xl font-bold">
+                {locationId ? "Editar Ubicación" : "Nueva Ubicación"}
+              </CardTitle>
+            </div>
+            {locationId && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-destructive">
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent size="sm">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>¿Eliminar ubicación?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Esta acción eliminará la ubicación {locationName}. Esta operación no se puede deshacer.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDelete}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      disabled={deleting}
+                    >
+                      {deleting ? "Eliminando..." : "Eliminar"}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
           </div>
         </CardHeader>
         <CardContent className="px-0 space-y-4">
@@ -138,9 +198,9 @@ export function LocationForm({ rooms }: LocationFormProps) {
           </div>
         </CardContent>
         <CardFooter className="px-0 pt-6">
-          <Button 
-            type="submit" 
-            className="w-full h-12 rounded-xl text-base font-semibold shadow-lg shadow-primary/20 transition-all hover:shadow-primary/30 active:scale-[0.98]" 
+          <Button
+            type="submit"
+            className="w-full h-12 rounded-xl text-base font-semibold shadow-lg shadow-primary/20 transition-all hover:shadow-primary/30 active:scale-[0.98]"
             disabled={loading}
           >
             {loading ? (
