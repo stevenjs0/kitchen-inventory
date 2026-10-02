@@ -9,6 +9,7 @@ export class LocationsService {
   constructor(
     private repository: LocationRepository,
     private currentUserName?: string,
+    private currentUserId?: string,
   ) {}
 
   async createLocation(
@@ -31,6 +32,7 @@ export class LocationsService {
       const location = await this.repository.create(data, {
         createdBy: this.currentUserName,
         updatedBy: this.currentUserName,
+        userId: this.currentUserId,
       });
       return { success: true, data: location };
     } catch (error) {
@@ -55,6 +57,7 @@ export class LocationsService {
     try {
       const location = await this.repository.update(id, data, {
         updatedBy: this.currentUserName,
+        userId: this.currentUserId,
       });
       return { success: true, data: location };
     } catch (error) {

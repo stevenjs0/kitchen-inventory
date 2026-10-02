@@ -188,6 +188,8 @@ export class SupabaseInventoryRepository implements InventoryRepository {
         unit: data.unit || 'unidad',
         created_by: ctx?.createdBy ?? ctx?.updatedBy ?? null,
         updated_by: ctx?.updatedBy ?? ctx?.createdBy ?? null,
+        created_by_uid: ctx?.userId ?? null,
+        updated_by_uid: ctx?.userId ?? null,
       })
       .select('*, categories(*), locations(*)')
       .single();
@@ -206,6 +208,7 @@ export class SupabaseInventoryRepository implements InventoryRepository {
       .update({
         ...data,
         updated_by: ctx?.updatedBy ?? null,
+        updated_by_uid: ctx?.userId ?? null,
       })
       .eq('id', id)
       .select('*, categories(*), locations(*)')
@@ -229,6 +232,7 @@ export class SupabaseInventoryRepository implements InventoryRepository {
         stock_quantity: quantity,
         last_stock_update: new Date().toISOString(),
         updated_by: ctx?.updatedBy ?? null,
+        updated_by_uid: ctx?.userId ?? null,
       })
       .eq('id', id)
       .select('*, categories(*), locations(*)')

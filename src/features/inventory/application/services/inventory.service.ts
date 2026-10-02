@@ -9,6 +9,7 @@ export class InventoryService {
   constructor(
     private repository: InventoryRepository,
     private currentUserName?: string,
+    private currentUserId?: string,
   ) {}
 
   async createItem(
@@ -26,6 +27,7 @@ export class InventoryService {
       const item = await this.repository.create(data, {
         createdBy: this.currentUserName,
         updatedBy: this.currentUserName,
+        userId: this.currentUserId,
       });
       return { success: true, data: item };
     } catch (error) {
@@ -49,6 +51,7 @@ export class InventoryService {
     try {
       const item = await this.repository.update(id, data, {
         updatedBy: this.currentUserName,
+        userId: this.currentUserId,
       });
       return { success: true, data: item };
     } catch (error) {
@@ -90,6 +93,7 @@ export class InventoryService {
     try {
       const updatedItem = await this.repository.updateStock(id, newStock, {
         updatedBy: this.currentUserName,
+        userId: this.currentUserId,
       });
       return { success: true, data: updatedItem };
     } catch (error) {

@@ -9,6 +9,7 @@ export class RoomsService {
   constructor(
     private repository: RoomRepository,
     private currentUserName?: string,
+    private currentUserId?: string,
   ) {}
 
   async createRoom(
@@ -27,6 +28,7 @@ export class RoomsService {
       const room = await this.repository.create(data, {
         createdBy: this.currentUserName,
         updatedBy: this.currentUserName,
+        userId: this.currentUserId,
       });
       return { success: true, data: room };
     } catch (error) {
@@ -62,6 +64,7 @@ export class RoomsService {
     try {
       const room = await this.repository.update(id, data, {
         updatedBy: this.currentUserName,
+        userId: this.currentUserId,
       });
       return { success: true, data: room };
     } catch (error) {
