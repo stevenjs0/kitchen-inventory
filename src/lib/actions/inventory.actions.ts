@@ -19,7 +19,6 @@ export async function createInventoryItem(data: CreateInventoryItemDTO) {
 
   if (result.success) {
     revalidatePath('/inventory');
-    revalidatePath('/');
   }
 
   return result;
@@ -46,7 +45,6 @@ export async function deleteInventoryItem(id: string) {
 
   if (result.success) {
     revalidatePath('/inventory');
-    revalidatePath('/');
   }
 
   return result;
@@ -58,7 +56,6 @@ export async function updateStock(id: string, delta: number) {
 
   if (result.success) {
     revalidatePath('/inventory');
-    revalidatePath('/');
   }
 
   return result;
@@ -104,7 +101,6 @@ export async function importInventoryCsv(csv: string): Promise<ImportResult> {
 
   if (result.created > 0 || result.updated > 0) {
     revalidatePath('/inventory');
-    revalidatePath('/');
   }
 
   return result;
