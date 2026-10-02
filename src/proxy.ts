@@ -4,6 +4,11 @@ import { createMiddlewareClient } from '@/lib/supabase/middleware'
 const publicRoutes = ['/login', '/auth', '/_not-found']
 const authRoutes = ['/login']
 
+// Match exacto o por segmento: '/login-otro' no debe matchear '/login'.
+function matchesRoute(pathname: string, route: string) {
+  return pathname === route || pathname.startsWith(route + '/')
+}
+
 export async function proxy(request: NextRequest) {
   const { supabase, supabaseResponse } = createMiddlewareClient(request)
   const {
@@ -11,10 +16,10 @@ export async function proxy(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   const isPublicRoute = publicRoutes.some((route) =>
-    request.nextUrl.pathname.startsWith(route)
+    matchesRoute(request.nextUrl.pathname, route)
   )
   const isAuthRoute = authRoutes.some((route) =>
-    request.nextUrl.pathname.startsWith(route)
+    matchesRoute(request.nextUrl.pathname, route)
   )
 
   if (!user && !isPublicRoute) {
