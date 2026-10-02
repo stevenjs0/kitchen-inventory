@@ -132,9 +132,11 @@ export class SupabaseInventoryRepository implements InventoryRepository {
       .select('*, categories(*), locations(*)')
       .eq('id', id)
       .eq('is_active', true)
-      .single();
+      .maybeSingle();
 
-    if (error || !data) return null;
+    // maybeSingle: null sin error = "no existe"; cualquier error es de BD.
+    if (error) throw error;
+    if (!data) return null;
     return this.toEntity(data as InventoryItemDB);
   }
 
@@ -160,7 +162,8 @@ export class SupabaseInventoryRepository implements InventoryRepository {
       query = query.eq('stock_quantity', 0);
     }
 
-    const { data } = await query.order('created_at', { ascending: false });
+    const { data, error } = await query.order('created_at', { ascending: false });
+    if (error) throw error;
     const items = data
       ? (data as InventoryItemDB[]).map((item) => this.toEntity(item))
       : [];
@@ -216,10 +219,12 @@ export class SupabaseInventoryRepository implements InventoryRepository {
   }
 
   async delete(id: string): Promise<void> {
-    await this.db
+    const { error } = await this.db
       .from('inventory_items')
       .update({ is_active: false })
       .eq('id', id);
+
+    if (error) throw error;
   }
 
   async updateStock(id: string, delta: number, ctx?: MutationContext): Promise<InventoryItem> {
