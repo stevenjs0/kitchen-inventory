@@ -3,16 +3,7 @@
 import { createContext, useContext, useEffect, useState, useRef, useCallback, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-
-interface User {
-  id: string;
-  email?: string;
-  user_metadata?: {
-    avatar_url?: string;
-    full_name?: string;
-    name?: string;
-  };
-}
+import type { User } from '@supabase/supabase-js';
 
 interface AuthContextValue {
   user: User | null;
@@ -44,8 +35,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event: string, session: { user: unknown } | null) => {
-        resolve(session?.user as User | null);
+      (_event, session) => {
+        resolve(session?.user ?? null);
       },
     );
 
