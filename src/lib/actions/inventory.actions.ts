@@ -9,7 +9,7 @@ import {
   CreateInventoryItemDTO,
   UpdateInventoryItemDTO,
 } from '@/features/inventory/domain/entities';
-import { CsvImportRepository } from '@/features/inventory/infrastructure/import/csv-import.repository';
+import { CsvImportService } from '@/features/inventory/application/csv-import.service';
 import { ImportResult } from '@/features/inventory/domain/ports';
 
 export async function createInventoryItem(data: CreateInventoryItemDTO) {
@@ -93,7 +93,7 @@ export async function importInventoryCsv(csv: string): Promise<ImportResult> {
       getRoomsService(),
     ]);
 
-  const importer = new CsvImportRepository(
+  const importer = new CsvImportService(
     roomsService,
     categoriesService,
     locationsService,

@@ -14,6 +14,7 @@ export interface InventoryRepository {
   findById(id: string): Promise<InventoryItem | null>;
   findAll(filters?: InventoryFilters): Promise<InventoryItem[]>;
   create(data: CreateInventoryItemDTO, ctx?: MutationContext): Promise<InventoryItem>;
+  createMany(data: CreateInventoryItemDTO[], ctx?: MutationContext): Promise<InventoryItem[]>;
   update(id: string, data: UpdateInventoryItemDTO, ctx?: MutationContext): Promise<InventoryItem>;
   delete(id: string): Promise<void>;
   updateStock(id: string, quantity: number, ctx?: MutationContext): Promise<InventoryItem>;
@@ -27,10 +28,6 @@ export interface ExportRepository {
   exportItems(items: InventoryItem[]): string;
   getContentType(): string;
   getFileExtension(): string;
-}
-
-export interface ImportRepository {
-  importItems(rawCsv: string): Promise<ImportResult>;
 }
 
 export interface ImportResult {
