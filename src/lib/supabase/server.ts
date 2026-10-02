@@ -1,7 +1,15 @@
+import { cache } from 'react';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
-export async function createClient() {
+/**
+ * Cliente de Supabase para el server (Server Components, Server Actions y
+ * Route Handlers), con deduplicación por request: todas las llamadas dentro
+ * de una misma request reutilizan el mismo cliente (patrón client-per-request,
+ * igual que `requireUser` en `src/lib/auth.ts`). En Next 16 la función de
+ * memoización por request es `cache` de `react`; `next/cache` no la exporta.
+ */
+export const createClient = cache(async () => {
   const cookieStore = await cookies();
 
   const url = process.env.SUPABASE_LOCAL_URL || process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -31,4 +39,4 @@ export async function createClient() {
       },
     },
   );
-}
+});
