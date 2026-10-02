@@ -2,7 +2,6 @@ import { LocationRepository } from "@/features/locations/domain/ports";
 import {
   Location,
   CreateLocationDTO,
-  UpdateLocationDTO,
 } from "@/features/locations/domain/entities";
 
 export class LocationsService {
@@ -38,30 +37,6 @@ export class LocationsService {
         success: false,
         error:
           error instanceof Error ? error.message : "Error al crear ubicación",
-      };
-    }
-  }
-
-  async updateLocation(
-    id: string,
-    data: UpdateLocationDTO
-  ): Promise<{ success: boolean; data?: Location; error?: string }> {
-    const existing = await this.repository.findById(id);
-
-    if (!existing) {
-      return { success: false, error: "Ubicación no encontrada" };
-    }
-
-    try {
-      const location = await this.repository.update(id, data, {
-        updatedBy: this.currentUserName,
-      });
-      return { success: true, data: location };
-    } catch (error) {
-      return {
-        success: false,
-        error:
-          error instanceof Error ? error.message : "Error al actualizar ubicación",
       };
     }
   }
