@@ -88,7 +88,9 @@ export class InventoryService {
     }
 
     try {
-      const updatedItem = await this.repository.updateStock(id, newStock, {
+      // El repositorio aplica el delta de forma atómica; newStock solo se usa
+      // aquí para validar que el resultado no quede negativo.
+      const updatedItem = await this.repository.updateStock(id, delta, {
         updatedBy: this.currentUserName,
       });
       return { success: true, data: updatedItem };

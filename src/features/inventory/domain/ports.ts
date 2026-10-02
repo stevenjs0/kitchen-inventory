@@ -16,7 +16,7 @@ export interface InventoryRepository {
   create(data: CreateInventoryItemDTO, ctx?: MutationContext): Promise<InventoryItem>;
   update(id: string, data: UpdateInventoryItemDTO, ctx?: MutationContext): Promise<InventoryItem>;
   delete(id: string): Promise<void>;
-  updateStock(id: string, quantity: number, ctx?: MutationContext): Promise<InventoryItem>;
+  updateStock(id: string, delta: number, ctx?: MutationContext): Promise<InventoryItem>;
   findMissing(): Promise<InventoryItem[]>;
   search(query: string): Promise<InventoryItem[]>;
   findByCategory(categoryId: string): Promise<InventoryItem[]>;

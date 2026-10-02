@@ -222,20 +222,46 @@ export class SupabaseInventoryRepository implements InventoryRepository {
       .eq('id', id);
   }
 
-  async updateStock(id: string, quantity: number, ctx?: MutationContext): Promise<InventoryItem> {
-    const { data: result, error } = await this.db
-      .from('inventory_items')
-      .update({
-        stock_quantity: quantity,
-        last_stock_update: new Date().toISOString(),
-        updated_by: ctx?.updatedBy ?? null,
-      })
-      .eq('id', id)
-      .select('*, categories(*), locations(*)')
-      .single();
+  async updateStock(id: string, delta: number, ctx?: MutationContext): Promise<InventoryItem> {
+    // Incremento atómico equivalente a `stock_quantity = stock_quantity + delta`:
+    // el UPDATE es condicional sobre el valor leído; si otra petición cambió el
+    // stock en el medio, Postgres no actualiza ninguna fila (EvalPlanQual) y se
+    // reintenta, así nunca se pisan deltas concurrentes. (supabase-js 2.x no
+    // expone el tag `sql`, y no hay función RPC en la BD que podamos usar.)
+    const MAX_ATTEMPTS = 5;
 
-    if (error) throw error;
-    return this.toEntity(result as InventoryItemDB);
+    for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+      const { data: current, error: readError } = await this.db
+        .from('inventory_items')
+        .select('stock_quantity')
+        .eq('id', id)
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (readError) throw readError;
+      if (!current) throw new Error('Item no encontrado');
+
+      const nextStock = current.stock_quantity + delta;
+      if (nextStock < 0) throw new Error('El stock no puede ser negativo');
+
+      const { data: result, error } = await this.db
+        .from('inventory_items')
+        .update({
+          stock_quantity: nextStock,
+          last_stock_update: new Date().toISOString(),
+          updated_by: ctx?.updatedBy ?? null,
+        })
+        .eq('id', id)
+        .eq('stock_quantity', current.stock_quantity)
+        .select('*, categories(*), locations(*)')
+        .maybeSingle();
+
+      if (error) throw error;
+      if (result) return this.toEntity(result as InventoryItemDB);
+      // 0 filas actualizadas: el stock cambió por una escritura concurrente.
+    }
+
+    throw new Error('No se pudo actualizar el stock, intentá de nuevo');
   }
 
   async findMissing(): Promise<InventoryItem[]> {
