@@ -1,11 +1,12 @@
 import { InventoryItem } from '@/features/inventory/domain/entities';
 import { Room } from '@/features/rooms/domain/entities';
 
+// Se agrupa por conteo de ítems: sumar stock_quantity cruzaría unidades
+// incompatibles (litros + unidades) dentro del mismo grupo.
 export interface StockByCategory {
   categoryId: string;
   name: string;
   color: string;
-  total: number;
   itemCount: number;
 }
 
@@ -13,7 +14,6 @@ export interface StockByRoom {
   roomId: string;
   name: string;
   color: string;
-  total: number;
   itemCount: number;
 }
 
@@ -21,7 +21,6 @@ export interface StockByLocation {
   locationId: string;
   name: string;
   color: string;
-  total: number;
   itemCount: number;
 }
 
@@ -39,19 +38,17 @@ export function aggregateStockByCategory(
     if (!item.category) continue;
     const existing = acc.get(item.category.id);
     if (existing) {
-      existing.total += item.stock_quantity;
       existing.itemCount += 1;
     } else {
       acc.set(item.category.id, {
         categoryId: item.category.id,
         name: item.category.name,
         color: item.category.color ?? '#6B7280',
-        total: item.stock_quantity,
         itemCount: 1,
       });
     }
   }
-  return [...acc.values()].sort((a, b) => b.total - a.total);
+  return [...acc.values()].sort((a, b) => b.itemCount - a.itemCount);
 }
 
 export function aggregateStockByRoom(
@@ -66,19 +63,17 @@ export function aggregateStockByRoom(
     if (!room) continue;
     const existing = acc.get(room.id);
     if (existing) {
-      existing.total += item.stock_quantity;
       existing.itemCount += 1;
     } else {
       acc.set(room.id, {
         roomId: room.id,
         name: room.name,
         color: room.color ?? '#6B7280',
-        total: item.stock_quantity,
         itemCount: 1,
       });
     }
   }
-  return [...acc.values()].sort((a, b) => b.total - a.total);
+  return [...acc.values()].sort((a, b) => b.itemCount - a.itemCount);
 }
 
 export function aggregateStockByLocation(
@@ -92,7 +87,6 @@ export function aggregateStockByLocation(
     if (!loc) continue;
     const existing = acc.get(loc.id);
     if (existing) {
-      existing.total += item.stock_quantity;
       existing.itemCount += 1;
     } else {
       const room = loc.room_id ? roomById.get(loc.room_id) : undefined;
@@ -100,12 +94,11 @@ export function aggregateStockByLocation(
         locationId: loc.id,
         name: loc.name,
         color: room?.color ?? '#6B7280',
-        total: item.stock_quantity,
         itemCount: 1,
       });
     }
   }
-  return [...acc.values()].sort((a, b) => b.total - a.total);
+  return [...acc.values()].sort((a, b) => b.itemCount - a.itemCount);
 }
 
 export function aggregateStockStatus(items: InventoryItem[]): StockStatus[] {
