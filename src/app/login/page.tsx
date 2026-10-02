@@ -32,6 +32,9 @@ function GoogleIcon({ className }: { className?: string }) {
   );
 }
 
+// En producción solo se expone Google OAuth; el login local (email/contraseña) es de desarrollo.
+const isLocalLoginEnabled = process.env.NODE_ENV !== 'production';
+
 function LoginForm() {
   const searchParams = useSearchParams();
   const authError = searchParams.get('error');
@@ -112,7 +115,7 @@ function LoginForm() {
               </div>
             )}
 
-            {isLocalMode ? (
+            {isLocalLoginEnabled && isLocalMode ? (
               <form onSubmit={handleEmailSignIn} className="grid gap-3">
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
@@ -188,14 +191,16 @@ function LoginForm() {
                   )}
                   Continuar con Google
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full text-xs text-muted-foreground"
-                  onClick={() => { setIsLocalMode(true); setError(''); }}
-                >
-                  Iniciar con email/contraseña (local)
-                </Button>
+                {isLocalLoginEnabled && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full text-xs text-muted-foreground"
+                    onClick={() => { setIsLocalMode(true); setError(''); }}
+                  >
+                    Iniciar con email/contraseña (local)
+                  </Button>
+                )}
               </>
             )}
           </CardContent>
