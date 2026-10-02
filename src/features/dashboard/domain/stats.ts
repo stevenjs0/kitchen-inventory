@@ -1,4 +1,4 @@
-import { InventoryItem } from '@/features/inventory/domain/entities';
+import { InventoryItem, type StockStatus } from '@/features/inventory/domain/entities';
 import { Room } from '@/features/rooms/domain/entities';
 
 // Se agrupa por conteo de ítems: sumar stock_quantity cruzaría unidades
@@ -24,8 +24,9 @@ export interface StockByLocation {
   itemCount: number;
 }
 
-export interface StockStatus {
-  status: 'normal' | 'low' | 'out';
+/** Fila del gráfico de estados; `status` usa el enum canónico del dominio. */
+export interface StockStatusEntry {
+  status: StockStatus;
   count: number;
   label: string;
 }
@@ -101,7 +102,7 @@ export function aggregateStockByLocation(
   return [...acc.values()].sort((a, b) => b.itemCount - a.itemCount);
 }
 
-export function aggregateStockStatus(items: InventoryItem[]): StockStatus[] {
+export function aggregateStockStatus(items: InventoryItem[]): StockStatusEntry[] {
   let normal = 0;
   let low = 0;
   let out = 0;
@@ -116,7 +117,7 @@ export function aggregateStockStatus(items: InventoryItem[]): StockStatus[] {
     }
   }
 
-  const result: StockStatus[] = [
+  const result: StockStatusEntry[] = [
     { status: 'normal', count: normal, label: 'Normal' },
     { status: 'low', count: low, label: 'Bajo' },
     { status: 'out', count: out, label: 'Agotado' },

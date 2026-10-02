@@ -1,10 +1,12 @@
+import type { StockStatus } from "@/features/inventory/domain/entities";
+
 export function formatStockStatus(stock: number, minStock: number): {
-  status: "normal" | "low" | "empty";
+  status: StockStatus;
   label: string;
   color: string;
 } {
   if (stock === 0) {
-    return { status: "empty", label: "Agotado", color: "text-red-600" };
+    return { status: "out", label: "Agotado", color: "text-red-600" };
   }
   if (stock < minStock) {
     return { status: "low", label: "Stock bajo", color: "text-amber-600" };
