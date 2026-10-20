@@ -4,6 +4,10 @@ import {
   CreateInventoryItemDTO,
   UpdateInventoryItemDTO,
 } from "@/features/inventory/domain/entities";
+import {
+  InsufficientStockError,
+  ItemNotFoundError,
+} from "@/features/inventory/domain/errors";
 
 export class InventoryService {
   constructor(
@@ -45,10 +49,25 @@ export class InventoryService {
       return { success: true, data: [] };
     }
 
+    const invalid = items.find(
+      (item) =>
+        !item.name ||
+        item.name.trim().length === 0 ||
+        item.stock_quantity < 0 ||
+        item.min_stock < 0
+    );
+    if (invalid) {
+      return {
+        success: false,
+        error: `Datos inválidos para "${invalid.name || 'sin nombre'}"`,
+      };
+    }
+
     try {
       const created = await this.repository.createMany(items, {
         createdBy: this.currentUserName,
         updatedBy: this.currentUserName,
+        userId: this.currentUserId,
       });
       return { success: true, data: created };
     } catch (error) {
@@ -100,26 +119,18 @@ export class InventoryService {
     delta: number
   ): Promise<{ success: boolean; data?: InventoryItem; error?: string }> {
     try {
-      const item = await this.repository.findById(id);
-
-      if (!item) {
-        return { success: false, error: "Item no encontrado" };
-      }
-
-      const newStock = item.stock_quantity + delta;
-
-      if (newStock < 0) {
-        return { success: false, error: "El stock no puede ser negativo" };
-      }
-
-      // El repositorio aplica el delta de forma atómica; newStock solo se usa
-      // aquí para validar que el resultado no quede negativo.
       const updatedItem = await this.repository.updateStock(id, delta, {
         updatedBy: this.currentUserName,
         userId: this.currentUserId,
       });
       return { success: true, data: updatedItem };
     } catch (error) {
+      if (error instanceof InsufficientStockError) {
+        return { success: false, error: error.message, data: error.current };
+      }
+      if (error instanceof ItemNotFoundError) {
+        return { success: false, error: error.message };
+      }
       return {
         success: false,
         error: error instanceof Error ? error.message : "Error al actualizar stock",

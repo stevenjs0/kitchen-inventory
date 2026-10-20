@@ -37,6 +37,8 @@ export function SearchBar({
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const autoSelectedRef = useRef<string | null>(null);
+
   const setQuery = useCallback(
     (next: string) => {
       if (isControlled) {
@@ -67,6 +69,12 @@ export function SearchBar({
   }, []);
 
   useEffect(() => {
+    if (autoSelectedRef.current !== null) {
+      const wasAutoSelected = autoSelectedRef.current === query;
+      autoSelectedRef.current = null;
+      if (wasAutoSelected) return;
+    }
+
     const debounce = setTimeout(() => {
       search(query);
     }, 300);
@@ -86,6 +94,7 @@ export function SearchBar({
   }, [query, search]);
 
   const handleSelect = (item: InventoryItem) => {
+    autoSelectedRef.current = item.name;
     setQuery(item.name);
     setResults([]);
     setIsOpen(false);
@@ -135,17 +144,14 @@ export function SearchBar({
                   item.min_stock,
                 );
 
-                const badgeVariant:
-                  | 'destructive'
-                  | 'warning'
-                  | 'success'
-                  | 'secondary' = stockInfo.color.includes('red')
-                  ? 'destructive'
-                  : stockInfo.color.includes('amber')
-                    ? 'warning'
-                    : stockInfo.color.includes('green')
-                      ? 'success'
-                      : 'secondary';
+                const badgeVariant =
+                  stockInfo.status === 'out'
+                    ? 'destructive'
+                    : stockInfo.status === 'low'
+                      ? 'warning'
+                      : stockInfo.status === 'normal'
+                        ? 'success'
+                        : 'secondary';
 
                 return (
                   <li key={item.id}>

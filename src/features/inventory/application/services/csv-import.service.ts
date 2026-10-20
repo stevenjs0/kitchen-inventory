@@ -2,6 +2,7 @@ import Papa from 'papaparse';
 import { ImportResult } from '@/features/inventory/domain/ports';
 import { CreateInventoryItemDTO } from '@/features/inventory/domain/entities';
 import { InventoryService } from '@/features/inventory/application/services/inventory.service';
+import { buildLocationPath } from '@/features/locations/domain/location-path';
 import { RoomsService } from '@/features/rooms/application/services/rooms.service';
 import { CategoriesService } from '@/features/categories/application/services/categories.service';
 import { LocationsService } from '@/features/locations/application/services/locations.service';
@@ -173,7 +174,7 @@ export class CsvImportService {
             locationId = existingLocation.id;
           } else {
             const createResult = await this.locationsService.createLocation({
-              name: [section, level, side, position].filter(Boolean).join(' - '),
+              name: buildLocationPath({ section, level, side, position }),
               section,
               level,
               side,

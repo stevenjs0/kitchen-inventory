@@ -17,6 +17,7 @@ export async function createLocation(data: {
   if (result.success) {
     revalidatePath("/locations");
     revalidatePath("/inventory");
+    revalidatePath("/dashboard");
   }
 
   return result;
@@ -34,6 +35,7 @@ export async function deleteLocation(id: string) {
   if (result.success) {
     revalidatePath("/locations");
     revalidatePath("/inventory");
+    revalidatePath("/dashboard");
   }
 
   return result;

@@ -8,12 +8,12 @@ import {
 describe('formatStockStatus', () => {
   it('marca "Agotado" cuando el stock es 0', () => {
     expect(formatStockStatus(0, 5)).toEqual({
-      status: 'empty',
+      status: 'out',
       label: 'Agotado',
       color: 'text-red-600',
     });
     // Con min_stock 0 sigue siendo agotado (se chequea antes que el mínimo)
-    expect(formatStockStatus(0, 0).status).toBe('empty');
+    expect(formatStockStatus(0, 0).status).toBe('out');
   });
 
   it('marca "Stock bajo" cuando hay stock pero por debajo del mínimo', () => {

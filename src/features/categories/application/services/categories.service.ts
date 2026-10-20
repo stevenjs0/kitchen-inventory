@@ -18,15 +18,15 @@ export class CategoriesService {
       return { success: false, error: 'El nombre es requerido' };
     }
 
-    const existing = await this.repository.findByName(data.name, data.room_id);
-    if (existing) {
-      return {
-        success: false,
-        error: 'Ya existe una categoría con ese nombre en este ambiente',
-      };
-    }
-
     try {
+      const existing = await this.repository.findByName(data.name, data.room_id);
+      if (existing) {
+        return {
+          success: false,
+          error: 'Ya existe una categoría con ese nombre en este ambiente',
+        };
+      }
+
       const category = await this.repository.create(data, {
         createdBy: this.currentUserName,
         updatedBy: this.currentUserName,

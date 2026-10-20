@@ -43,18 +43,20 @@ export class SupabaseRoomRepository implements RoomRepository {
       .from("rooms")
       .select("*")
       .eq("id", id)
-      .single();
+      .maybeSingle();
 
-    if (error || !data) return null;
+    if (error) throw error;
+    if (!data) return null;
     return this.toEntity(data);
   }
 
   async findAll(): Promise<Room[]> {
-    const { data } = await this.db
+    const { data, error } = await this.db
       .from("rooms")
       .select("*")
       .order("name", { ascending: true });
 
+    if (error) throw error;
     return data ? data.map((item) => this.toEntity(item)) : [];
   }
 
@@ -97,12 +99,13 @@ export class SupabaseRoomRepository implements RoomRepository {
   }
 
   async findByName(name: string): Promise<Room | null> {
-    const { data } = await this.db
+    const { data, error } = await this.db
       .from("rooms")
       .select("*")
       .eq("name", name)
-      .single();
+      .maybeSingle();
 
+    if (error) throw error;
     if (!data) return null;
     return this.toEntity(data);
   }

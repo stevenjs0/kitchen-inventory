@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Location } from '@/features/locations/domain/entities';
 import { cn } from '@/lib/utils';
-import { MapPin, Trash2 } from 'lucide-react';
+import { MapPin, Trash2, Loader2 } from 'lucide-react';
 import { deleteLocation } from '@/lib/actions/locations.actions';
 import { toast } from 'sonner';
 import {
@@ -37,7 +37,7 @@ export function LocationTree({
       } else {
         toast.error(result.error || "Error al eliminar la ubicación");
       }
-    } catch (error) {
+    } catch {
       toast.error("Error inesperado al eliminar la ubicación");
     } finally {
       setDeletingId(null);
@@ -98,9 +98,14 @@ export function LocationTree({
                         e.stopPropagation();
                         setDeletingId(location.id);
                       }}
+                      aria-label={`Eliminar ${location.name}`}
                       className="p-2 bg-background border rounded-lg text-muted-foreground hover:text-destructive hover:border-destructive transition-colors"
                     >
-                      <Trash2 className="h-3 w-3" />
+                      {deletingId === location.id ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-3 w-3" />
+                      )}
                     </AlertDialogTrigger>
                     <AlertDialogContent size="sm">
                       <AlertDialogHeader>

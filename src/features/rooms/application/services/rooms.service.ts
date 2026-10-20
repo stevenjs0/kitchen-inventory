@@ -18,12 +18,12 @@ export class RoomsService {
       return { success: false, error: 'El nombre es requerido' };
     }
 
-    const existing = await this.repository.findByName(data.name);
-    if (existing) {
-      return { success: false, error: 'Ya existe un ambiente con ese nombre' };
-    }
-
     try {
+      const existing = await this.repository.findByName(data.name);
+      if (existing) {
+        return { success: false, error: 'Ya existe un ambiente con ese nombre' };
+      }
+
       const room = await this.repository.create(data, {
         createdBy: this.currentUserName,
         updatedBy: this.currentUserName,

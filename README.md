@@ -117,8 +117,9 @@ For detailed architecture documentation, database schema, and implementation not
 
 Four core tables: `rooms`, `categories`, `locations`, `inventory_items`
 
-- `locations.full_path` — auto-generated (stored) from section/side/position/level
-- `inventory_items.search_vector` — full-text search (Spanish, weighted)
+- `locations.full_path` — auto-generated (stored) from section/side/position/level, skipping the empty parts
+- `inventory_items.search_vector` — generated but unused: the search runs in memory
+- Unique names are scoped per room (`categories`, `locations`)
 - Row Level Security enabled (fully permissive for personal use)
 - Soft deletes via `is_active` flag
 

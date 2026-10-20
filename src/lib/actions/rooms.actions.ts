@@ -20,6 +20,7 @@ export async function createRoom(data: {
   if (result.success) {
     revalidatePath('/rooms');
     revalidatePath('/inventory');
+    revalidatePath('/dashboard');
   }
 
   return result;
@@ -32,6 +33,7 @@ export async function deleteRoom(id: string) {
   if (result.success) {
     revalidatePath('/rooms');
     revalidatePath('/inventory');
+    revalidatePath('/dashboard');
   }
 
   return result;

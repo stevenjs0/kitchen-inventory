@@ -44,18 +44,14 @@ export function InventoryList({ items, onStockCommitted }: InventoryListProps) {
           item.min_stock,
         );
 
-        // Map status color to badge variant
-        const badgeVariant:
-          | 'destructive'
-          | 'warning'
-          | 'success'
-          | 'secondary' = stockInfo.color.includes('red')
-          ? 'destructive'
-          : stockInfo.color.includes('amber')
-            ? 'warning'
-            : stockInfo.color.includes('green')
-              ? 'success'
-              : 'secondary';
+        const badgeVariant =
+          stockInfo.status === 'out'
+            ? 'destructive'
+            : stockInfo.status === 'low'
+              ? 'warning'
+              : stockInfo.status === 'normal'
+                ? 'success'
+                : 'secondary';
 
         return (
           <Card

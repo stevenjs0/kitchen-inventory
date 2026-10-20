@@ -9,7 +9,7 @@ import {
   CreateInventoryItemDTO,
   UpdateInventoryItemDTO,
 } from '@/features/inventory/domain/entities';
-import { CsvImportService } from '@/features/inventory/application/csv-import.service';
+import { CsvImportService } from '@/features/inventory/application/services/csv-import.service';
 import { ImportResult } from '@/features/inventory/domain/ports';
 
 export async function createInventoryItem(data: CreateInventoryItemDTO) {
@@ -19,6 +19,7 @@ export async function createInventoryItem(data: CreateInventoryItemDTO) {
 
   if (result.success) {
     revalidatePath('/inventory');
+    revalidatePath('/dashboard');
   }
 
   return result;
@@ -34,6 +35,7 @@ export async function updateInventoryItem(
   if (result.success) {
     revalidatePath('/inventory');
     revalidatePath(`/inventory/${id}`);
+    revalidatePath('/dashboard');
   }
 
   return result;
@@ -45,6 +47,7 @@ export async function deleteInventoryItem(id: string) {
 
   if (result.success) {
     revalidatePath('/inventory');
+    revalidatePath('/dashboard');
   }
 
   return result;
@@ -56,6 +59,7 @@ export async function updateStock(id: string, delta: number) {
 
   if (result.success) {
     revalidatePath('/inventory');
+    revalidatePath('/dashboard');
   }
 
   return result;
@@ -101,6 +105,7 @@ export async function importInventoryCsv(csv: string): Promise<ImportResult> {
 
   if (result.created > 0 || result.updated > 0) {
     revalidatePath('/inventory');
+    revalidatePath('/dashboard');
   }
 
   return result;

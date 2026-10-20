@@ -20,6 +20,7 @@ export async function createCategory(data: {
   if (result.success) {
     revalidatePath("/categories");
     revalidatePath("/inventory");
+    revalidatePath("/dashboard");
   }
 
   return result;
@@ -32,6 +33,7 @@ export async function deleteCategory(id: string) {
   if (result.success) {
     revalidatePath("/categories");
     revalidatePath("/inventory");
+    revalidatePath("/dashboard");
   }
 
   return result;

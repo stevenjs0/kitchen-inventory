@@ -9,6 +9,11 @@ import {
   InventoryRepository,
   MutationContext,
 } from '@/features/inventory/domain/ports';
+import {
+  InsufficientStockError,
+  ItemNotFoundError,
+} from '@/features/inventory/domain/errors';
+
 interface CategoryDB {
   id: string;
   name: string;
@@ -134,7 +139,6 @@ export class SupabaseInventoryRepository implements InventoryRepository {
       .eq('is_active', true)
       .maybeSingle();
 
-    // maybeSingle: null sin error = "no existe"; cualquier error es de BD.
     if (error) throw error;
     if (!data) return null;
     return this.toEntity(data as InventoryItemDB);
@@ -215,6 +219,8 @@ export class SupabaseInventoryRepository implements InventoryRepository {
           unit: item.unit || 'unidad',
           created_by: ctx?.createdBy ?? ctx?.updatedBy ?? null,
           updated_by: ctx?.updatedBy ?? ctx?.createdBy ?? null,
+          created_by_uid: ctx?.userId ?? null,
+          updated_by_uid: ctx?.userId ?? null,
         })),
       )
       .select('*, categories(*), locations(*)');
@@ -263,16 +269,17 @@ export class SupabaseInventoryRepository implements InventoryRepository {
     for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
       const { data: current, error: readError } = await this.db
         .from('inventory_items')
-        .select('stock_quantity')
+        .select('*, categories(*), locations(*)')
         .eq('id', id)
         .eq('is_active', true)
         .maybeSingle();
 
       if (readError) throw readError;
-      if (!current) throw new Error('Item no encontrado');
+      if (!current) throw new ItemNotFoundError();
 
-      const nextStock = current.stock_quantity + delta;
-      if (nextStock < 0) throw new Error('El stock no puede ser negativo');
+      const currentEntity = this.toEntity(current as InventoryItemDB);
+      const nextStock = currentEntity.stock_quantity + delta;
+      if (nextStock < 0) throw new InsufficientStockError(currentEntity);
 
       const { data: result, error } = await this.db
         .from('inventory_items')
@@ -280,9 +287,10 @@ export class SupabaseInventoryRepository implements InventoryRepository {
           stock_quantity: nextStock,
           last_stock_update: new Date().toISOString(),
           updated_by: ctx?.updatedBy ?? null,
+          updated_by_uid: ctx?.userId ?? null,
         })
         .eq('id', id)
-        .eq('stock_quantity', current.stock_quantity)
+        .eq('stock_quantity', currentEntity.stock_quantity)
         .select('*, categories(*), locations(*)')
         .maybeSingle();
 
