@@ -72,6 +72,8 @@ export class SupabaseLocationRepository implements LocationRepository {
         ...data,
         created_by: ctx?.createdBy ?? ctx?.updatedBy ?? null,
         updated_by: ctx?.updatedBy ?? ctx?.createdBy ?? null,
+        created_by_uid: ctx?.userId ?? null,
+        updated_by_uid: ctx?.userId ?? null,
       })
       .select("*")
       .single();
@@ -86,6 +88,7 @@ export class SupabaseLocationRepository implements LocationRepository {
     .update({
       ...data,
       updated_by: ctx?.updatedBy ?? null,
+      updated_by_uid: ctx?.userId ?? null,
     })
       .eq("id", id)
       .select("*")

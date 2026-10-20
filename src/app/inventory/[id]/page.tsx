@@ -23,7 +23,7 @@ export default async function ItemPage({
   searchParams,
 }: PageProps) {
   const { id } = await params;
-  const { edit, from } = await searchParams;
+  const { edit } = await searchParams;
   const isEditing = edit === "true";
 
   const [item, categories, locations, rooms] = await Promise.all([

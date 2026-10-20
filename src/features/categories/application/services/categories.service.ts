@@ -9,6 +9,7 @@ export class CategoriesService {
   constructor(
     private repository: CategoryRepository,
     private currentUserName?: string,
+    private currentUserId?: string,
   ) {}
 
   async createCategory(
@@ -30,6 +31,7 @@ export class CategoriesService {
       const category = await this.repository.create(data, {
         createdBy: this.currentUserName,
         updatedBy: this.currentUserName,
+        userId: this.currentUserId,
       });
       return { success: true, data: category };
     } catch (error) {
@@ -64,6 +66,7 @@ export class CategoriesService {
     try {
       const category = await this.repository.update(id, data, {
         updatedBy: this.currentUserName,
+        userId: this.currentUserId,
       });
       return { success: true, data: category };
     } catch (error) {

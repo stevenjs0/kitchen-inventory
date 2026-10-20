@@ -65,6 +65,8 @@ export class SupabaseCategoryRepository implements CategoryRepository {
         ...data,
         created_by: ctx?.createdBy ?? ctx?.updatedBy ?? null,
         updated_by: ctx?.updatedBy ?? ctx?.createdBy ?? null,
+        created_by_uid: ctx?.userId ?? null,
+        updated_by_uid: ctx?.userId ?? null,
       })
       .select("*")
       .single();
@@ -79,6 +81,7 @@ export class SupabaseCategoryRepository implements CategoryRepository {
     .update({
       ...data,
       updated_by: ctx?.updatedBy ?? null,
+      updated_by_uid: ctx?.userId ?? null,
     })
       .eq("id", id)
       .select("*")
