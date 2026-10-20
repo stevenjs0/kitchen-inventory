@@ -156,7 +156,7 @@ export class SupabaseInventoryRepository implements InventoryRepository {
     query = query.or(`categories.room_id.eq.${filters.room_id},locations.room_id.eq.${filters.room_id}`);
   }
 
-    if (filters?.stock_status === 'empty') {
+    if (filters?.stock_status === 'out') {
       query = query.eq('stock_quantity', 0);
     }
 

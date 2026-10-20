@@ -1,10 +1,12 @@
+import type { StockStatus } from "@/features/inventory/domain/entities";
+
 export function formatStockStatus(stock: number, minStock: number): {
-  status: "normal" | "low" | "empty";
+  status: StockStatus;
   label: string;
   color: string;
 } {
   if (stock === 0) {
-    return { status: "empty", label: "Agotado", color: "text-red-600" };
+    return { status: "out", label: "Agotado", color: "text-red-600" };
   }
   if (stock < minStock) {
     return { status: "low", label: "Stock bajo", color: "text-amber-600" };
@@ -15,6 +17,17 @@ export function formatStockStatus(stock: number, minStock: number): {
 export function formatDate(date: Date | string): string {
   return new Date(date).toLocaleDateString("es-AR", {
     year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+
+export function formatDateLong(date: Date | string): string {
+  return new Date(date).toLocaleDateString("es-AR", { dateStyle: "long" });
+}
+
+export function formatShortDate(date: Date | string): string {
+  return new Date(date).toLocaleDateString("es-AR", {
     month: "short",
     day: "numeric",
   });

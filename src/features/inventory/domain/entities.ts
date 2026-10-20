@@ -56,10 +56,17 @@ export interface UpdateInventoryItemDTO {
   notes?: string;
 }
 
+/**
+ * Estados canónicos de stock para filtros, badges y dashboard.
+ * Elegimos `'out'` (no `'empty'`) por ser el valor ya usado por los filtros de
+ * URL, el dashboard y los badges; `'empty'` queda eliminado de la app.
+ */
+export type StockStatus = 'normal' | 'low' | 'out';
+
 export interface InventoryFilters {
   category_id?: string;
   location_id?: string;
   room_id?: string;
-  stock_status?: "normal" | "low" | "empty";
+  stock_status?: StockStatus;
   search?: string;
 }

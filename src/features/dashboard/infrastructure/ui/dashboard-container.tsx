@@ -46,7 +46,6 @@ export function DashboardContainer({
   const status = useMemo(() => aggregateStockStatus(items), [items]);
 
   const statusConfig = {
-    total: { label: 'Total' },
     normal: { label: 'Normal', color: '#10B981' },
     low: { label: 'Bajo', color: '#F59E0B' },
     out: { label: 'Agotado', color: '#EF4444' },
@@ -59,7 +58,7 @@ export function DashboardContainer({
           <CardHeader>
             <CardTitle className="text-lg">Stock por categoría</CardTitle>
             <CardDescription>
-              Cantidad total de stock agrupada por categoría
+              Cantidad de items agrupada por categoría
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -74,7 +73,7 @@ export function DashboardContainer({
                   />
                   <Pie
                     data={byCategory}
-                    dataKey="total"
+                    dataKey="itemCount"
                     nameKey="name"
                     innerRadius={60}
                     outerRadius={100}
@@ -143,7 +142,7 @@ export function DashboardContainer({
           <CardHeader>
             <CardTitle className="text-lg">Stock por ambiente</CardTitle>
             <CardDescription>
-              Cantidad total de stock agrupada por ambiente
+              Cantidad de items agrupada por ambiente
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -167,7 +166,7 @@ export function DashboardContainer({
                     cursor={false}
                     content={<ChartTooltipContent />}
                   />
-                  <Bar dataKey="total" radius={6} name="Stock">
+                  <Bar dataKey="itemCount" radius={6} name="Items">
                     {byRoom.map((entry) => (
                       <Cell key={entry.roomId} fill={entry.color} />
                     ))}
@@ -182,7 +181,7 @@ export function DashboardContainer({
           <CardHeader>
             <CardTitle className="text-lg">Stock por ubicación</CardTitle>
             <CardDescription>
-              Cantidad total de stock agrupada por ubicación
+              Cantidad de items agrupada por ubicación
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -206,7 +205,7 @@ export function DashboardContainer({
                     cursor={false}
                     content={<ChartTooltipContent />}
                   />
-                  <Bar dataKey="total" radius={6} name="Stock">
+                  <Bar dataKey="itemCount" radius={6} name="Items">
                     {byLocation.map((entry) => (
                       <Cell key={entry.locationId} fill={entry.color} />
                     ))}

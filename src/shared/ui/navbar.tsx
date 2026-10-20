@@ -6,7 +6,6 @@ import { cn } from '@/lib/utils';
 import { ChartPie, Package, MapPin, Tags, Home } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { UserMenu } from './user-menu';
-import { MobileUserMenu } from './mobile-user-menu';
 
 const navItems = [
   { href: '/dashboard', label: 'Resumen', icon: ChartPie, exact: true },
@@ -75,7 +74,7 @@ export function Navbar() {
           </Link>
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <MobileUserMenu />
+            <UserMenu variant="mobile" />
           </div>
         </div>
       </header>

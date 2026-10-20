@@ -205,10 +205,6 @@ function LoginForm() {
             )}
           </CardContent>
         </Card>
-
-        <p className="text-center text-xs text-muted-foreground">
-          Al continuar, aceptas nuestros términos y condiciones.
-        </p>
       </div>
     </div>
   );

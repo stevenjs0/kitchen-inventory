@@ -2,7 +2,7 @@
 
 import { InventoryItem } from '@/features/inventory/domain/entities';
 import { StockQuickUpdate } from './stock-quick-update';
-import { formatStockStatus } from '@/shared/utils/formatters';
+import { formatShortDate, formatStockStatus } from '@/shared/utils/formatters';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -115,7 +115,7 @@ export function InventoryList({ items, onStockCommitted }: InventoryListProps) {
                     Actualizado
                     {item.updated_by ? ` por ${item.updated_by}` : ''}
                     {item.updated_at
-                      ? ` • ${new Date(item.updated_at).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })}`
+                      ? ` • ${formatShortDate(item.updated_at)}`
                       : ''}
                   </span>
                 </div>
