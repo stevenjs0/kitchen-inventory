@@ -2,7 +2,6 @@ import { RoomRepository } from '@/features/rooms/domain/ports';
 import {
     Room,
     CreateRoomDTO,
-    UpdateRoomDTO,
 } from '@/features/rooms/domain/entities';
 
 export class RoomsService {
@@ -37,43 +36,6 @@ export class RoomsService {
         success: false,
         error:
           error instanceof Error ? error.message : 'Error al crear ambiente',
-      };
-    }
-  }
-
-  async updateRoom(
-    id: string,
-    data: UpdateRoomDTO,
-  ): Promise<{ success: boolean; data?: Room; error?: string }> {
-    const existing = await this.repository.findById(id);
-
-    if (!existing) {
-      return { success: false, error: 'Ambiente no encontrado' };
-    }
-
-    if (data.name) {
-      const nameExists = await this.repository.findByName(data.name);
-      if (nameExists && nameExists.id !== id) {
-        return {
-          success: false,
-          error: 'Ya existe un ambiente con ese nombre',
-        };
-      }
-    }
-
-    try {
-      const room = await this.repository.update(id, data, {
-        updatedBy: this.currentUserName,
-        userId: this.currentUserId,
-      });
-      return { success: true, data: room };
-    } catch (error) {
-      return {
-        success: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : 'Error al actualizar ambiente',
       };
     }
   }

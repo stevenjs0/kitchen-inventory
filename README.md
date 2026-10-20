@@ -21,7 +21,7 @@ Manage your kitchen supplies across every cabinet, shelf, and drawer. Built with
 | **Full-Text Search** | Spanish-language search across item names and notes |
 | **Stock Alerts** | Visual indicators for low/empty stock |
 | **Quick Stock Update** | Increment/decrement stock directly from the list |
-| **Export** | Download inventory as Markdown grouped by location |
+| **Export** | Download inventory as CSV (name, category, room, location, stock) |
 | **Dark Mode** | System-aware theming with manual toggle |
 | **Mobile-First** | Bottom navigation on mobile, responsive throughout |
 
@@ -115,7 +115,7 @@ For detailed architecture documentation, database schema, and implementation not
 
 ## Database
 
-Three core tables: `categories`, `locations`, `inventory_items`
+Four core tables: `rooms`, `categories`, `locations`, `inventory_items`
 
 - `locations.full_path` — auto-generated (stored) from section/side/position/level
 - `inventory_items.search_vector` — full-text search (Spanish, weighted)
@@ -148,7 +148,7 @@ npm run lint
 
 **Requirements:** Node.js 20+, a Supabase project (PostgreSQL)
 
-**Database setup:** Run `supabase/setup_database.sql` in your Supabase SQL editor.
+**Database setup:** apply the migrations in `supabase/migrations/` with `npm run db:push` (local) or `npm run db:push:prod` (linked project).
 
 ---
 

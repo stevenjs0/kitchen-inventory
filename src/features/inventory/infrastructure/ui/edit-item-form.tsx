@@ -9,6 +9,7 @@ import {
 import { Category } from '@/features/categories/domain/entities';
 import { Location } from '@/features/locations/domain/entities';
 import { Room } from '@/features/rooms/domain/entities';
+import { safeDecodeFrom } from '@/shared/utils/safe-decode';
 
 interface EditItemFormProps {
   item: InventoryItem;
@@ -16,18 +17,6 @@ interface EditItemFormProps {
   locations: Location[];
   rooms: Room[];
   updateAction: (data: CreateInventoryItemDTO) => Promise<{ success: boolean; data?: InventoryItem; error?: string }>;
-}
-
-function safeDecodeFrom(value: string | null | undefined): string | null {
-  if (!value) return null;
-  try {
-    const decoded = decodeURIComponent(value);
-    // Only accept internal paths to avoid open-redirect / XSS via the router.
-    if (!decoded.startsWith('/') || decoded.startsWith('//')) return null;
-    return decoded;
-  } catch {
-    return null;
-  }
 }
 
 /**

@@ -2,7 +2,6 @@ import { CategoryRepository } from '@/features/categories/domain/ports';
 import {
   Category,
   CreateCategoryDTO,
-  UpdateCategoryDTO,
 } from '@/features/categories/domain/entities';
 
 export class CategoriesService {
@@ -39,43 +38,6 @@ export class CategoriesService {
         success: false,
         error:
           error instanceof Error ? error.message : 'Error al crear categoría',
-      };
-    }
-  }
-
-  async updateCategory(
-    id: string,
-    data: UpdateCategoryDTO,
-  ): Promise<{ success: boolean; data?: Category; error?: string }> {
-    const existing = await this.repository.findById(id);
-
-    if (!existing) {
-      return { success: false, error: 'Categoría no encontrada' };
-    }
-
-    if (data.name) {
-      const nameExists = await this.repository.findByName(data.name, data.room_id || existing.room_id);
-      if (nameExists && nameExists.id !== id) {
-        return {
-          success: false,
-          error: 'Ya existe una categoría con ese nombre en este ambiente',
-        };
-      }
-    }
-
-    try {
-      const category = await this.repository.update(id, data, {
-        updatedBy: this.currentUserName,
-        userId: this.currentUserId,
-      });
-      return { success: true, data: category };
-    } catch (error) {
-      return {
-        success: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : 'Error al actualizar categoría',
       };
     }
   }

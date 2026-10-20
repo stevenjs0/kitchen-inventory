@@ -132,9 +132,11 @@ export class SupabaseInventoryRepository implements InventoryRepository {
       .select('*, categories(*), locations(*)')
       .eq('id', id)
       .eq('is_active', true)
-      .single();
+      .maybeSingle();
 
-    if (error || !data) return null;
+    // maybeSingle: null sin error = "no existe"; cualquier error es de BD.
+    if (error) throw error;
+    if (!data) return null;
     return this.toEntity(data as InventoryItemDB);
   }
 
@@ -160,7 +162,8 @@ export class SupabaseInventoryRepository implements InventoryRepository {
       query = query.eq('stock_quantity', 0);
     }
 
-    const { data } = await query.order('created_at', { ascending: false });
+    const { data, error } = await query.order('created_at', { ascending: false });
+    if (error) throw error;
     const items = data
       ? (data as InventoryItemDB[]).map((item) => this.toEntity(item))
       : [];
@@ -241,27 +244,54 @@ export class SupabaseInventoryRepository implements InventoryRepository {
   }
 
   async delete(id: string): Promise<void> {
-    await this.db
+    const { error } = await this.db
       .from('inventory_items')
       .update({ is_active: false })
       .eq('id', id);
-  }
-
-  async updateStock(id: string, quantity: number, ctx?: MutationContext): Promise<InventoryItem> {
-    const { data: result, error } = await this.db
-      .from('inventory_items')
-      .update({
-        stock_quantity: quantity,
-        last_stock_update: new Date().toISOString(),
-        updated_by: ctx?.updatedBy ?? null,
-        updated_by_uid: ctx?.userId ?? null,
-      })
-      .eq('id', id)
-      .select('*, categories(*), locations(*)')
-      .single();
 
     if (error) throw error;
-    return this.toEntity(result as InventoryItemDB);
+  }
+
+  async updateStock(id: string, delta: number, ctx?: MutationContext): Promise<InventoryItem> {
+    // Incremento atómico equivalente a `stock_quantity = stock_quantity + delta`:
+    // el UPDATE es condicional sobre el valor leído; si otra petición cambió el
+    // stock en el medio, Postgres no actualiza ninguna fila (EvalPlanQual) y se
+    // reintenta, así nunca se pisan deltas concurrentes. (supabase-js 2.x no
+    // expone el tag `sql`, y no hay función RPC en la BD que podamos usar.)
+    const MAX_ATTEMPTS = 5;
+
+    for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+      const { data: current, error: readError } = await this.db
+        .from('inventory_items')
+        .select('stock_quantity')
+        .eq('id', id)
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (readError) throw readError;
+      if (!current) throw new Error('Item no encontrado');
+
+      const nextStock = current.stock_quantity + delta;
+      if (nextStock < 0) throw new Error('El stock no puede ser negativo');
+
+      const { data: result, error } = await this.db
+        .from('inventory_items')
+        .update({
+          stock_quantity: nextStock,
+          last_stock_update: new Date().toISOString(),
+          updated_by: ctx?.updatedBy ?? null,
+        })
+        .eq('id', id)
+        .eq('stock_quantity', current.stock_quantity)
+        .select('*, categories(*), locations(*)')
+        .maybeSingle();
+
+      if (error) throw error;
+      if (result) return this.toEntity(result as InventoryItemDB);
+      // 0 filas actualizadas: el stock cambió por una escritura concurrente.
+    }
+
+    throw new Error('No se pudo actualizar el stock, intentá de nuevo');
   }
 
   async findMissing(): Promise<InventoryItem[]> {

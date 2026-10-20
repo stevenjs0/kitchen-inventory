@@ -63,13 +63,13 @@ export class InventoryService {
     id: string,
     data: UpdateInventoryItemDTO
   ): Promise<{ success: boolean; data?: InventoryItem; error?: string }> {
-    const existing = await this.repository.findById(id);
-
-    if (!existing) {
-      return { success: false, error: "Item no encontrado" };
-    }
-
     try {
+      const existing = await this.repository.findById(id);
+
+      if (!existing) {
+        return { success: false, error: "Item no encontrado" };
+      }
+
       const item = await this.repository.update(id, data, {
         updatedBy: this.currentUserName,
         userId: this.currentUserId,
@@ -99,20 +99,22 @@ export class InventoryService {
     id: string,
     delta: number
   ): Promise<{ success: boolean; data?: InventoryItem; error?: string }> {
-    const item = await this.repository.findById(id);
-
-    if (!item) {
-      return { success: false, error: "Item no encontrado" };
-    }
-
-    const newStock = item.stock_quantity + delta;
-
-    if (newStock < 0) {
-      return { success: false, error: "El stock no puede ser negativo" };
-    }
-
     try {
-      const updatedItem = await this.repository.updateStock(id, newStock, {
+      const item = await this.repository.findById(id);
+
+      if (!item) {
+        return { success: false, error: "Item no encontrado" };
+      }
+
+      const newStock = item.stock_quantity + delta;
+
+      if (newStock < 0) {
+        return { success: false, error: "El stock no puede ser negativo" };
+      }
+
+      // El repositorio aplica el delta de forma atómica; newStock solo se usa
+      // aquí para validar que el resultado no quede negativo.
+      const updatedItem = await this.repository.updateStock(id, delta, {
         updatedBy: this.currentUserName,
         userId: this.currentUserId,
       });
