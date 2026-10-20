@@ -26,38 +26,34 @@ function makeItem(
 }
 
 describe('aggregateStockByCategory', () => {
-  it('sums stock and counts items per category, sorted by total desc', () => {
+  it('counts items per category, sorted by item count desc', () => {
     const items = [
       makeItem({
         id: 'a',
         stock_quantity: 2,
-        category: { id: 'cat2', name: 'B', color: '#000000' },
+        unit: 'litro',
+        category: { id: 'cat1', name: 'A', color: '#ffffff' },
       }),
       makeItem({
         id: 'b',
         stock_quantity: 5,
+        unit: 'unidad',
         category: { id: 'cat1', name: 'A', color: '#ffffff' },
       }),
-      makeItem({ id: 'c', stock_quantity: 3, category: undefined }),
+      makeItem({
+        id: 'c',
+        stock_quantity: 3,
+        unit: 'litro',
+        category: { id: 'cat2', name: 'B', color: '#000000' },
+      }),
+      makeItem({ id: 'd', stock_quantity: 7, category: undefined }),
     ];
 
     const result = aggregateStockByCategory(items);
 
     expect(result).toEqual([
-      {
-        categoryId: 'cat1',
-        name: 'A',
-        color: '#ffffff',
-        total: 5,
-        itemCount: 1,
-      },
-      {
-        categoryId: 'cat2',
-        name: 'B',
-        color: '#000000',
-        total: 2,
-        itemCount: 1,
-      },
+      { categoryId: 'cat1', name: 'A', color: '#ffffff', itemCount: 2 },
+      { categoryId: 'cat2', name: 'B', color: '#000000', itemCount: 1 },
     ]);
   });
 });
@@ -99,7 +95,7 @@ describe('aggregateStockByRoom', () => {
     const result = aggregateStockByRoom(items, rooms);
 
     expect(result).toEqual([
-      { roomId: 'room1', name: 'Cocina', color: '#F97316', total: 5, itemCount: 2 },
+      { roomId: 'room1', name: 'Cocina', color: '#F97316', itemCount: 2 },
     ]);
   });
 });
@@ -152,7 +148,6 @@ describe('aggregateStockByLocation', () => {
         locationId: 'loc1',
         name: 'Alacena',
         color: '#F97316',
-        total: 5,
         itemCount: 2,
       },
     ]);
@@ -181,7 +176,6 @@ describe('aggregateStockByLocation', () => {
         locationId: 'loc2',
         name: 'Nevera',
         color: '#6B7280',
-        total: 2,
         itemCount: 1,
       },
     ]);

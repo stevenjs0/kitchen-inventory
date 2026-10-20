@@ -49,19 +49,21 @@ export class SupabaseLocationRepository implements LocationRepository {
       .from("locations")
       .select("*")
       .eq("id", id)
-      .single();
+      .maybeSingle();
 
-    if (error || !data) return null;
+    if (error) throw error;
+    if (!data) return null;
     return this.toEntity(data);
   }
 
   async findAll(): Promise<Location[]> {
-    const { data } = await this.db
+    const { data, error } = await this.db
       .from("locations")
       .select("*")
       .order("section", { ascending: true })
       .order("level", { ascending: true });
 
+    if (error) throw error;
     return data ? data.map((item) => this.toEntity(item)) : [];
   }
 
@@ -72,6 +74,8 @@ export class SupabaseLocationRepository implements LocationRepository {
         ...data,
         created_by: ctx?.createdBy ?? ctx?.updatedBy ?? null,
         updated_by: ctx?.updatedBy ?? ctx?.createdBy ?? null,
+        created_by_uid: ctx?.userId ?? null,
+        updated_by_uid: ctx?.userId ?? null,
       })
       .select("*")
       .single();
@@ -86,6 +90,7 @@ export class SupabaseLocationRepository implements LocationRepository {
     .update({
       ...data,
       updated_by: ctx?.updatedBy ?? null,
+      updated_by_uid: ctx?.userId ?? null,
     })
       .eq("id", id)
       .select("*")
@@ -109,8 +114,9 @@ export class SupabaseLocationRepository implements LocationRepository {
       query = query.eq("room_id", roomId);
     }
 
-    const { data } = await query.single();
+    const { data, error } = await query.maybeSingle();
 
+    if (error) throw error;
     if (!data) return null;
     return this.toEntity(data);
   }

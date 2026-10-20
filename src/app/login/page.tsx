@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,7 +32,12 @@ function GoogleIcon({ className }: { className?: string }) {
   );
 }
 
-export default function LoginPage() {
+// En producción solo se expone Google OAuth; el login local (email/contraseña) es de desarrollo.
+const isLocalLoginEnabled = process.env.NODE_ENV !== 'production';
+
+function LoginForm() {
+  const searchParams = useSearchParams();
+  const authError = searchParams.get('error');
   const [isLoading, setIsLoading] = useState(false);
   const [isLocalMode, setIsLocalMode] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -94,13 +100,22 @@ export default function LoginPage() {
             <CardDescription>Inicia sesión para continuar</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-3 pt-4">
+            {authError && (
+              <div
+                role="alert"
+                className="text-sm text-destructive bg-destructive/10 rounded-lg px-3 py-2"
+              >
+                No se pudo iniciar sesión, intentá de nuevo.
+              </div>
+            )}
+
             {error && (
               <div className="text-sm text-destructive bg-destructive/10 rounded-lg px-3 py-2">
                 {error}
               </div>
             )}
 
-            {isLocalMode ? (
+            {isLocalLoginEnabled && isLocalMode ? (
               <form onSubmit={handleEmailSignIn} className="grid gap-3">
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
@@ -176,23 +191,30 @@ export default function LoginPage() {
                   )}
                   Continuar con Google
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full text-xs text-muted-foreground"
-                  onClick={() => { setIsLocalMode(true); setError(''); }}
-                >
-                  Iniciar con email/contraseña (local)
-                </Button>
+                {isLocalLoginEnabled && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full text-xs text-muted-foreground"
+                    onClick={() => { setIsLocalMode(true); setError(''); }}
+                  >
+                    Iniciar con email/contraseña (local)
+                  </Button>
+                )}
               </>
             )}
           </CardContent>
         </Card>
-
-        <p className="text-center text-xs text-muted-foreground">
-          Al continuar, aceptas nuestros términos y condiciones.
-        </p>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  // useSearchParams exige un límite de Suspense en Next 16 (render estático).
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
   );
 }

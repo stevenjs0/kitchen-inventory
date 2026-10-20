@@ -43,18 +43,20 @@ export class SupabaseCategoryRepository implements CategoryRepository {
       .from("categories")
       .select("*")
       .eq("id", id)
-      .single();
+      .maybeSingle();
 
-    if (error || !data) return null;
+    if (error) throw error;
+    if (!data) return null;
     return this.toEntity(data);
   }
 
   async findAll(): Promise<Category[]> {
-    const { data } = await this.db
+    const { data, error } = await this.db
       .from("categories")
       .select("*")
       .order("name", { ascending: true });
 
+    if (error) throw error;
     return data ? data.map((item) => this.toEntity(item)) : [];
   }
 
@@ -65,6 +67,8 @@ export class SupabaseCategoryRepository implements CategoryRepository {
         ...data,
         created_by: ctx?.createdBy ?? ctx?.updatedBy ?? null,
         updated_by: ctx?.updatedBy ?? ctx?.createdBy ?? null,
+        created_by_uid: ctx?.userId ?? null,
+        updated_by_uid: ctx?.userId ?? null,
       })
       .select("*")
       .single();
@@ -79,6 +83,7 @@ export class SupabaseCategoryRepository implements CategoryRepository {
     .update({
       ...data,
       updated_by: ctx?.updatedBy ?? null,
+      updated_by_uid: ctx?.userId ?? null,
     })
       .eq("id", id)
       .select("*")
@@ -102,8 +107,9 @@ export class SupabaseCategoryRepository implements CategoryRepository {
       query = query.eq("room_id", roomId);
     }
 
-    const { data } = await query.single();
+    const { data, error } = await query.maybeSingle();
 
+    if (error) throw error;
     if (!data) return null;
     return this.toEntity(data);
   }

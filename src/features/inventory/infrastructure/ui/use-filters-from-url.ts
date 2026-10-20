@@ -2,8 +2,9 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
+import type { StockStatus } from '@/features/inventory/domain/entities';
 
-export type StockStatus = 'normal' | 'low' | 'out';
+export type { StockStatus };
 
 export interface InventoryFilters {
   q: string;

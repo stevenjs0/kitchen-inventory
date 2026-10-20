@@ -41,7 +41,7 @@ INSERT INTO categories (name, description, color, room_id) VALUES
   ('Esencias', 'Esencias y extractos', '#7C3AED', (SELECT id FROM rooms WHERE name = 'Cocina')),
   ('Perro', 'Comida para mascotas', '#0EA5E9', (SELECT id FROM rooms WHERE name = 'Cocina')),
   ('Pasta', 'Pastas y fideos', '#F59E0B', (SELECT id FROM rooms WHERE name = 'Cocina'))
-ON CONFLICT (name) DO NOTHING;
+ON CONFLICT (room_id, name) DO NOTHING;
 
 -- =====================================================
 -- 3. LOCATIONS
@@ -60,7 +60,7 @@ INSERT INTO locations (name, section, side, position, level, room_id) VALUES
   ('Alacena Abajo Izquierda, Primer Nivel', 'Alacena', 'Izquierda', 'Abajo', 'Primer Nivel', (SELECT id FROM rooms WHERE name = 'Cocina')),
   ('Alacena Abajo Izquierda, Segundo Nivel', 'Alacena', 'Izquierda', 'Abajo', 'Segundo Nivel', (SELECT id FROM rooms WHERE name = 'Cocina')),
 ('Alacena Abajo Derecha, Tercer Nivel', 'Alacena', 'Derecha', 'Abajo', 'Tercer Nivel', (SELECT id FROM rooms WHERE name = 'Cocina'))
-ON CONFLICT (name) DO NOTHING;
+ON CONFLICT (room_id, name) DO NOTHING;
 
 -- Seccion Condimentero
 INSERT INTO locations (name, section, side, position, level, room_id) VALUES
@@ -71,7 +71,7 @@ INSERT INTO locations (name, section, side, position, level, room_id) VALUES
   ('Condimentero Izquierdo, Tercer nivel', 'Condimentero', 'Izquierdo', NULL, 'Tercer nivel', (SELECT id FROM rooms WHERE name = 'Cocina')),
   ('Condimentero Derecho, Tercer nivel', 'Condimentero', 'Derecho', NULL, 'Tercer nivel', (SELECT id FROM rooms WHERE name = 'Cocina')),
 ('Condimentero Izquierdo, Cuarto nivel', 'Condimentero', 'Izquierdo', NULL, 'Cuarto nivel', (SELECT id FROM rooms WHERE name = 'Cocina'))
-ON CONFLICT (name) DO NOTHING;
+ON CONFLICT (room_id, name) DO NOTHING;
 
 -- =====================================================
 -- 4. INVENTORY ITEMS

@@ -1,5 +1,6 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { getSupabaseConfig } from '@/lib/supabase/config'
 
 export function createMiddlewareClient(request: NextRequest) {
   const supabaseResponse = NextResponse.next({
@@ -8,11 +9,10 @@ export function createMiddlewareClient(request: NextRequest) {
     },
   })
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_LOCAL_URL || process.env.NEXT_PUBLIC_SUPABASE_URL!
-  const key = process.env.NEXT_PUBLIC_SUPABASE_LOCAL_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
+  const { url, key, isLocal } = getSupabaseConfig()
 
   if (process.env.NODE_ENV === 'development') {
-    console.log('[supabase/middleware] using', url === process.env.NEXT_PUBLIC_SUPABASE_LOCAL_URL ? 'LOCAL' : 'CLOUD', 'instance');
+    console.log('[supabase/middleware] using', isLocal ? 'LOCAL' : 'CLOUD', 'instance');
   }
 
   const supabase = createServerClient(

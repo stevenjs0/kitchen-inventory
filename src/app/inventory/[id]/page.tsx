@@ -7,7 +7,7 @@ import { EditItemForm } from "@/features/inventory/infrastructure/ui/edit-item-f
 import { DeleteItemButton } from "@/features/inventory/infrastructure/ui/delete-item-button";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { formatStockStatus } from "@/shared/utils/formatters";
+import { formatDateLong, formatStockStatus } from "@/shared/utils/formatters";
 import { Edit3, MapPin, Tag, Calendar, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -23,7 +23,7 @@ export default async function ItemPage({
   searchParams,
 }: PageProps) {
   const { id } = await params;
-  const { edit, from } = await searchParams;
+  const { edit } = await searchParams;
   const isEditing = edit === "true";
 
   const [item, categories, locations, rooms] = await Promise.all([
@@ -139,7 +139,7 @@ export default async function ItemPage({
             <div>
               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Última Actualización</p>
               <p className="font-semibold">
-                {new Date(item.updated_at).toLocaleDateString('es-ES', { dateStyle: 'long' })}
+                {formatDateLong(item.updated_at)}
                 {item.updated_by && <span className="text-muted-foreground font-normal"> por {item.updated_by}</span>}
               </p>
             </div>

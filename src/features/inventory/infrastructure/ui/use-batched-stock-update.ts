@@ -17,7 +17,6 @@ interface UseBatchedStockUpdateResult {
   stock: number;
   pending: boolean;
   applyDelta: (delta: number) => void;
-  flushNow: () => Promise<void>;
 }
 
 export function useBatchedStockUpdate({
@@ -27,6 +26,8 @@ export function useBatchedStockUpdate({
 }: UseBatchedStockUpdateOptions): UseBatchedStockUpdateResult {
   const [stock, setStock] = useState(initialStock);
   const [pending, setPending] = useState(false);
+
+  const confirmedStockRef = useRef(initialStock);
 
   const bufferRef = useRef<{
     delta: number;
@@ -41,6 +42,12 @@ export function useBatchedStockUpdate({
     onCommittedRef.current = onStockCommitted;
   }, [onStockCommitted]);
 
+  useEffect(() => {
+    if (bufferRef.current.delta !== 0) return;
+    confirmedStockRef.current = initialStock;
+    setStock(initialStock);
+  }, [initialStock]);
+
   const flush = useCallback(async () => {
     const { delta, timer } = bufferRef.current;
     if (timer) {
@@ -54,20 +61,26 @@ export function useBatchedStockUpdate({
     setPending(true);
     try {
       const result = await updateStockAction(itemId, delta);
+
       if (!result.success) {
-        setStock((current) => current - delta);
+        if (result.data) {
+          confirmedStockRef.current = result.data.stock_quantity;
+        }
+        setStock(confirmedStockRef.current + bufferRef.current.delta);
         toast.error(result.error || "No se pudo actualizar el stock");
         return;
       }
+
       if (result.data) {
-        setStock(result.data.stock_quantity);
+        confirmedStockRef.current = result.data.stock_quantity;
         onCommittedRef.current?.(result.data);
       }
+      setStock(confirmedStockRef.current + bufferRef.current.delta);
       toast.success(
         delta > 0 ? "Stock incrementado" : "Stock decrementado",
       );
     } catch (error) {
-      setStock((current) => current - delta);
+      setStock(confirmedStockRef.current + bufferRef.current.delta);
       console.error("Failed to update stock:", error);
       toast.error("Error inesperado al actualizar el stock");
     } finally {
@@ -85,22 +98,16 @@ export function useBatchedStockUpdate({
 
   const applyDelta = useCallback(
     (delta: number) => {
-      setStock((current) => {
-        const next = current + delta;
-        if (next < 0) return current;
-        return next;
-      });
-      if (stock + delta < 0) return;
+      const next = confirmedStockRef.current + bufferRef.current.delta + delta;
+
+      if (next < 0) return;
 
       bufferRef.current.delta += delta;
+      setStock(next);
       scheduleFlush();
     },
-    [scheduleFlush, stock],
+    [scheduleFlush],
   );
-
-  const flushNow = useCallback(async () => {
-    await flush();
-  }, [flush]);
 
   useEffect(() => {
     const buffer = bufferRef.current;
@@ -112,5 +119,5 @@ export function useBatchedStockUpdate({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return { stock, pending, applyDelta, flushNow };
+  return { stock, pending, applyDelta };
 }

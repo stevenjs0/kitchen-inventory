@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createLocation, deleteLocation } from "@/lib/actions/locations.actions";
 import { Room } from "@/features/rooms/domain/entities";
+import { buildLocationPath } from "@/features/locations/domain/location-path";
 import { RoomSelect } from "@/features/rooms/infrastructure/ui/room-select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,7 +52,7 @@ export function LocationForm({ rooms, locationId, locationName }: LocationFormPr
       ...formData,
       side: formData.side || undefined,
       position: formData.position || undefined,
-      name: `${formData.section} ${formData.side} ${formData.position} ${formData.level}`.trim(),
+      name: buildLocationPath(formData),
     });
 
       if (result.success) {
@@ -102,7 +103,7 @@ export function LocationForm({ rooms, locationId, locationName }: LocationFormPr
             </div>
             {locationId && (
               <AlertDialog>
-                <AlertDialogTrigger>
+                <AlertDialogTrigger aria-label={`Eliminar ${locationName}`}>
                   <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-destructive">
                     <Trash2 className="h-4 w-4" />
                   </Button>

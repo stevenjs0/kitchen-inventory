@@ -2,7 +2,7 @@
 
 import { InventoryItem } from '@/features/inventory/domain/entities';
 import { StockQuickUpdate } from './stock-quick-update';
-import { formatStockStatus } from '@/shared/utils/formatters';
+import { formatShortDate, formatStockStatus } from '@/shared/utils/formatters';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -44,18 +44,14 @@ export function InventoryList({ items, onStockCommitted }: InventoryListProps) {
           item.min_stock,
         );
 
-        // Map status color to badge variant
-        const badgeVariant:
-          | 'destructive'
-          | 'warning'
-          | 'success'
-          | 'secondary' = stockInfo.color.includes('red')
-          ? 'destructive'
-          : stockInfo.color.includes('amber')
-            ? 'warning'
-            : stockInfo.color.includes('green')
-              ? 'success'
-              : 'secondary';
+        const badgeVariant =
+          stockInfo.status === 'out'
+            ? 'destructive'
+            : stockInfo.status === 'low'
+              ? 'warning'
+              : stockInfo.status === 'normal'
+                ? 'success'
+                : 'secondary';
 
         return (
           <Card
@@ -115,7 +111,7 @@ export function InventoryList({ items, onStockCommitted }: InventoryListProps) {
                     Actualizado
                     {item.updated_by ? ` por ${item.updated_by}` : ''}
                     {item.updated_at
-                      ? ` • ${new Date(item.updated_at).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })}`
+                      ? ` • ${formatShortDate(item.updated_at)}`
                       : ''}
                   </span>
                 </div>

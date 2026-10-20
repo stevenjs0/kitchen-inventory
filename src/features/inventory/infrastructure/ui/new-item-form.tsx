@@ -9,23 +9,13 @@ import {
 import { Category } from '@/features/categories/domain/entities';
 import { Location } from '@/features/locations/domain/entities';
 import { Room } from '@/features/rooms/domain/entities';
+import { safeDecodeFrom } from '@/shared/utils/safe-decode';
 
 interface NewItemFormProps {
   categories: Category[];
   locations: Location[];
   rooms: Room[];
   createAction: (data: CreateInventoryItemDTO) => Promise<{ success: boolean; data?: InventoryItem; error?: string }>;
-}
-
-function safeDecodeFrom(value: string | null | undefined): string | null {
-  if (!value) return null;
-  try {
-    const decoded = decodeURIComponent(value);
-    if (!decoded.startsWith('/') || decoded.startsWith('//')) return null;
-    return decoded;
-  } catch {
-    return null;
-  }
 }
 
 /**
