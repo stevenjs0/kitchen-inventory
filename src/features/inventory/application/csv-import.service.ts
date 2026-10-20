@@ -1,10 +1,13 @@
 import Papa from 'papaparse';
-import { ImportRepository, ImportResult } from '@/features/inventory/domain/ports';
+import { ImportResult } from '@/features/inventory/domain/ports';
+import { CreateInventoryItemDTO } from '@/features/inventory/domain/entities';
+import { InventoryService } from '@/features/inventory/application/services/inventory.service';
 import { RoomsService } from '@/features/rooms/application/services/rooms.service';
 import { CategoriesService } from '@/features/categories/application/services/categories.service';
 import { LocationsService } from '@/features/locations/application/services/locations.service';
-import { InventoryService } from '@/features/inventory/application/services/inventory.service';
-import { CreateInventoryItemDTO } from '@/features/inventory/domain/entities';
+
+const MAX_ROWS = 500;
+const INSERT_BATCH_SIZE = 100;
 
 interface CsvRow {
   nombre: string;
@@ -20,23 +23,32 @@ interface CsvRow {
   notas?: string;
 }
 
-export class CsvImportRepository implements ImportRepository {
-  private roomsService: RoomsService;
-  private categoriesService: CategoriesService;
-  private locationsService: LocationsService;
-  private inventoryService: InventoryService;
+interface PendingUpdate {
+  id: string;
+  name: string;
+  data: UpdateInventoryItemData;
+}
 
+interface UpdateInventoryItemData {
+  category_id: string;
+  stock_quantity: number;
+  min_stock: number;
+  unit: string;
+  notes?: string;
+}
+
+function safeParseInt(value: string | undefined, fallback: number): number {
+  const parsed = parseInt(value ?? '', 10);
+  return Number.isNaN(parsed) || parsed < 0 ? fallback : parsed;
+}
+
+export class CsvImportService {
   constructor(
-    roomsService: RoomsService,
-    categoriesService: CategoriesService,
-    locationsService: LocationsService,
-    inventoryService: InventoryService,
-  ) {
-    this.roomsService = roomsService;
-    this.categoriesService = categoriesService;
-    this.locationsService = locationsService;
-    this.inventoryService = inventoryService;
-  }
+    private roomsService: RoomsService,
+    private categoriesService: CategoriesService,
+    private locationsService: LocationsService,
+    private inventoryService: InventoryService,
+  ) {}
 
   async importItems(rawCsv: string): Promise<ImportResult> {
     const result: ImportResult = {
@@ -49,24 +61,26 @@ export class CsvImportRepository implements ImportRepository {
 
     rawCsv = rawCsv.replace(/^\uFEFF/, '');
 
-  const parsed = Papa.parse<CsvRow>(rawCsv, {
+    const parsed = Papa.parse<CsvRow>(rawCsv, {
       header: true,
       skipEmptyLines: true,
     });
 
     if (parsed.errors.length > 0) {
       result.errors.push(
-        ...parsed.errors.map((e) => `CSV parse error at row ${e.row ?? 'unknown'}: ${e.message}`),
+        ...parsed.errors.map(
+          (e) => `CSV parse error at row ${e.row ?? 'unknown'}: ${e.message}`,
+        ),
       );
     }
 
-  const rows = parsed.data;
-  if (rows.length > 500) {
-    result.errors.push('CSV exceeds 500 row limit');
-    result.success = false;
-    return result;
-  }
-  if (rows.length === 0) {
+    const rows = parsed.data;
+    if (rows.length > MAX_ROWS) {
+      result.errors.push('CSV exceeds 500 row limit');
+      result.success = false;
+      return result;
+    }
+    if (rows.length === 0) {
       result.errors.push('No data rows found in CSV');
       result.success = false;
       return result;
@@ -76,6 +90,9 @@ export class CsvImportRepository implements ImportRepository {
     const allCategories = await this.categoriesService.getAllCategories();
     const allLocations = await this.locationsService.getAllLocations();
     const allItems = await this.inventoryService.getAllItems();
+
+    const newItems: CreateInventoryItemDTO[] = [];
+    const pendingUpdates: PendingUpdate[] = [];
 
     for (const row of rows) {
       try {
@@ -95,7 +112,9 @@ export class CsvImportRepository implements ImportRepository {
 
         let roomId: string | undefined;
         if (roomName) {
-          const existingRoom = allRooms.find((r) => r.name.toLowerCase() === roomName.toLowerCase());
+          const existingRoom = allRooms.find(
+            (r) => r.name.toLowerCase() === roomName.toLowerCase(),
+          );
           if (existingRoom) {
             roomId = existingRoom.id;
           } else {
@@ -184,32 +203,25 @@ export class CsvImportRepository implements ImportRepository {
             item.location_id === locationId,
         );
 
-  const safeParseInt = (value: string | undefined, fallback: number): number => {
-    const parsed = parseInt(value ?? '', 10);
-    return Number.isNaN(parsed) || parsed < 0 ? fallback : parsed;
-  };
-
-  const stockQuantity = safeParseInt(row.stock_actual, 1);
-  const minStock = safeParseInt(row.stock_minimo, 1);
-  const unit = row.unidad?.trim() || 'unidad';
+        const stockQuantity = safeParseInt(row.stock_actual, 1);
+        const minStock = safeParseInt(row.stock_minimo, 1);
+        const unit = row.unidad?.trim() || 'unidad';
         const notes = row.notas?.trim() || undefined;
 
         if (existingItem) {
-          const updateResult = await this.inventoryService.updateItem(existingItem.id, {
-            category_id: categoryId,
-            stock_quantity: stockQuantity,
-            min_stock: minStock,
-            unit,
-            notes,
+          pendingUpdates.push({
+            id: existingItem.id,
+            name,
+            data: {
+              category_id: categoryId,
+              stock_quantity: stockQuantity,
+              min_stock: minStock,
+              unit,
+              notes,
+            },
           });
-          if (updateResult.success) {
-            result.updated++;
-          } else {
-            result.errors.push(`"${name}": update failed`);
-            result.skipped++;
-          }
         } else {
-          const dto: CreateInventoryItemDTO = {
+          newItems.push({
             name,
             category_id: categoryId,
             location_id: locationId,
@@ -217,17 +229,33 @@ export class CsvImportRepository implements ImportRepository {
             min_stock: minStock,
             unit,
             notes,
-          };
-          const createResult = await this.inventoryService.createItem(dto);
-          if (createResult.success) {
-            result.created++;
-          } else {
-            result.errors.push(`"${name}": create failed`);
-            result.skipped++;
-          }
+          });
         }
       } catch (err) {
         result.errors.push(`Unexpected error processing row: ${err}`);
+        result.skipped++;
+      }
+    }
+
+    for (let i = 0; i < newItems.length; i += INSERT_BATCH_SIZE) {
+      const batch = newItems.slice(i, i + INSERT_BATCH_SIZE);
+      const createResult = await this.inventoryService.createManyItems(batch);
+      if (createResult.success) {
+        result.created += batch.length;
+      } else {
+        for (const item of batch) {
+          result.errors.push(`"${item.name}": create failed`);
+          result.skipped++;
+        }
+      }
+    }
+
+    for (const { id, name, data } of pendingUpdates) {
+      const updateResult = await this.inventoryService.updateItem(id, data);
+      if (updateResult.success) {
+        result.updated++;
+      } else {
+        result.errors.push(`"${name}": update failed`);
         result.skipped++;
       }
     }

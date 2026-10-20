@@ -38,6 +38,27 @@ export class InventoryService {
     }
   }
 
+  async createManyItems(
+    items: CreateInventoryItemDTO[]
+  ): Promise<{ success: boolean; data?: InventoryItem[]; error?: string }> {
+    if (items.length === 0) {
+      return { success: true, data: [] };
+    }
+
+    try {
+      const created = await this.repository.createMany(items, {
+        createdBy: this.currentUserName,
+        updatedBy: this.currentUserName,
+      });
+      return { success: true, data: created };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Error al crear items",
+      };
+    }
+  }
+
   async updateItem(
     id: string,
     data: UpdateInventoryItemDTO

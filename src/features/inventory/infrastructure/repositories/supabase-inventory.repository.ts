@@ -198,6 +198,28 @@ export class SupabaseInventoryRepository implements InventoryRepository {
     return this.toEntity(result as InventoryItemDB);
   }
 
+  async createMany(
+    data: CreateInventoryItemDTO[],
+    ctx?: MutationContext,
+  ): Promise<InventoryItem[]> {
+    if (data.length === 0) return [];
+
+    const { data: result, error } = await this.db
+      .from('inventory_items')
+      .insert(
+        data.map((item) => ({
+          ...item,
+          unit: item.unit || 'unidad',
+          created_by: ctx?.createdBy ?? ctx?.updatedBy ?? null,
+          updated_by: ctx?.updatedBy ?? ctx?.createdBy ?? null,
+        })),
+      )
+      .select('*, categories(*), locations(*)');
+
+    if (error) throw error;
+    return (result ?? []).map((item) => this.toEntity(item as InventoryItemDB));
+  }
+
   async update(
     id: string,
     data: UpdateInventoryItemDTO,

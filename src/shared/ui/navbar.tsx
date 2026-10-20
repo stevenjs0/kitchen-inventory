@@ -5,7 +5,6 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { ChartPie, Package, MapPin, Tags, Home } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
-import { AuthProvider } from '@/lib/auth-context';
 import { UserMenu } from './user-menu';
 import { MobileUserMenu } from './mobile-user-menu';
 
@@ -33,7 +32,7 @@ export function Navbar() {
   const pathname = usePathname();
 
   return (
-    <AuthProvider>
+    <>
       {/* Desktop Header */}
       <header className="hidden md:flex sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
         <div className="container flex h-14 items-center justify-between max-w-2xl mx-auto px-4">
@@ -114,6 +113,6 @@ export function Navbar() {
           })}
         </div>
       </nav>
-    </AuthProvider>
+    </>
   );
 }
