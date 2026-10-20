@@ -1,0 +1,10 @@
+[      54ms] [LOG] %c Console Ninja extension is connected to Next.js browser, background: rgb(30,30,30); color: rgb(255,213,92) see https://tinyurl.com/2vt8jxzw for more info. @ :0
+[      57ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/_next/static/chunks/11iz_next_dist_048~8x5._.js:2437
+[      64ms] [LOG] [HMR] connected @ http://localhost:3000/_next/static/chunks/11iz_next_dist_048~8x5._.js:2437
+[      81ms] [LOG] [supabase/client] using CLOUD instance @ http://localhost:3000/_next/static/chunks/11iz_next_dist_048~8x5._.js:2437
+[    8974ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/11iz_next_dist_048~8x5._.js:2437
+[    9041ms] [LOG] [Fast Refresh] done in 168ms @ http://localhost:3000/_next/static/chunks/11iz_next_dist_048~8x5._.js:2437
+[    9158ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3000/_next/static/chunks/11iz_next_dist_048~8x5._.js:2437
+[    9243ms] [LOG] [Fast Refresh] done in 187ms @ http://localhost:3000/_next/static/chunks/11iz_next_dist_048~8x5._.js:2437
+[   22231ms] [VERBOSE] [DOM] Input elements should have autocomplete attributes (suggested: "current-password"): (More info: https://goo.gl/9p2vKq) %o @ http://localhost:3000/login?error=auth:0
+[   54756ms] [LOG] [HMR] connected @ http://localhost:3000/_next/static/chunks/11iz_next_dist_048~8x5._.js:2437
